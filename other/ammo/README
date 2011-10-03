@@ -1,0 +1,6 @@
+--- About ammo.js ---
+ammo.js is a direct port of the Bullet physics engine to JavaScript, using Emscripten.
+Read more about ammo.js here: https://github.com/kripken/ammo.js
+
+--- Folder instructions ---
+Put a recent version of ammo.js here, and make sure all demos are compatible with it before committing. Thanks.
