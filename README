@@ -14,4 +14,5 @@ Create a folder with a unique name in demos/, eg. MyDemo. Copy js and html files
 
 --- Todo ---
 Template demo with explanations
-Make SceneJS_ShapeViewer support more shapes
+Make SceneJS_ShapeDrawer support more shapes
+Support for more WebGL scenegraphs - Three.js? Extend the ShapeDrawer class (see SceneJS_ShapeDrawer for reference)
