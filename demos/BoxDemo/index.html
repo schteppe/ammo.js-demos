@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BoxDemo</title>
+  <meta name="description" content="Box physics simulation using ammo.js, WebGL and SceneJS." />
+  <meta name="keywords" content="ragdoll,ammo.js,ammo,bullet,bullet physics,webgl,physics,3d,3d physics,web physics,javascript" />
+  <script src="../../other/jquery/jquery.js"></script>
+  <script src="../../other/jquery/jquery.mousewheel.js"></script>
+  <script src="../../other/ammo/ammo.js"></script>
+  <script src="../../src/ShapeDrawer.js"></script>
+  <script src="../../src/SceneJS_ShapeDrawer.js"></script>
+  <script src="../../src/DemoApplication.js"></script>
+  <script src="BoxDemo.js"></script>
+  <script src="../../other/scenejs/scenejs.js"></script>
+  <link rel="stylesheet" media="screen" href="../demo.css" />
+</head>
+<body>
+  <div id="error">
+    <h1>ERROR</h1>
+    <p>Could not start the application... Please upgrade to a newer browser supporting WebGL.</p>
+  </div>
+  <div id="canvasContainer">
+    <canvas id="theCanvas"></canvas>
+  </div>
+  <div id="info">
+    <h1>BoxDemo</h1>
+  </div>
+  <script>
+    var s = new SceneJS_ShapeDrawer({canvasId:"theCanvas"});
+    var d = new MyDemoApplication({shapeDrawer:s});
+    $("#error").hide();
+  </script>
+</body>
+</html>

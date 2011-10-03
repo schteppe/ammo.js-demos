@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RagdollDemo</title>
+  <meta name="description" content="Ragdoll physics simulation using ammo.js, WebGL and SceneJS." />
+  <meta name="keywords" content="ragdoll,ammo.js,ammo,bullet,bullet physics,webgl,physics,3d,3d physics,web physics,javascript" />
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <script src="../../other/jquery/jquery.js"></script>
+  <script src="../../other/jquery/jquery.mousewheel.js"></script>
+  <script src="../../other/ammo/ammo.js"></script>
+  <script src="../../src/ShapeDrawer.js"></script>
+  <script src="../../src/SceneJS_ShapeDrawer.js"></script>
+  <script src="../../src/DemoApplication.js"></script>
+  <script src="RagdollDemo.js"></script>
+  <script src="Ragdoll.js"></script>
+  <script src="../../other/scenejs/scenejs.js"></script>
+  <link rel="stylesheet" media="screen" href="../demo.css" />
+</head>
+<body>
+  <div id="error">
+    <h1>ERROR</h1>
+    <p>Could not start the application... Please upgrade to a newer browser supporting WebGL.</p>
+  </div>
+  <div id="canvasContainer">
+    <canvas id="theCanvas"></canvas>
+  </div>
+  <div id="info">
+    <h1>RagdollDemo</h1>
+    <p>This is Bob. Please don't hurt him too much :)</p>
+  </div>
+  <script>
+    var s = new SceneJS_ShapeDrawer({canvasId:"theCanvas"});
+    var d = new MyDemoApplication({shapeDrawer:s});
+    $("#error").hide();
+  </script>
+</body>
+</html>
