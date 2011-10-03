@@ -14,3 +14,4 @@ Create a folder with a unique name in demos/, eg. MyDemo. Copy js and html files
 
 --- Todo ---
 Template demo with explanations
+Make SceneJS_ShapeViewer support more shapes
