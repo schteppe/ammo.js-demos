@@ -1,0 +1,15 @@
+ammo.js-demos
+=============
+
+This is supposed to be a 
+
+
+Add a new Demo
+------------
+
+Create a folder with a unique name in demos/, eg. MyDemo. Copy js and html files from some other demo into your new folder and use as a template.
+
+Todo
+----
+
+  * Template demo with explanations
