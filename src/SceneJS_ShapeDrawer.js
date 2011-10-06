@@ -25,6 +25,7 @@ function SceneJS_ShapeDrawer(options){
       canvasId:s.canvasId,
       nodes: [{
 	  type:"fog",
+	  id:"fog",
 	  mode:"exp2",
 	  color: { r: 1.0, g: 1.0, b: 1.0 },
 	  density: 20.0,
@@ -100,7 +101,125 @@ function SceneJS_ShapeDrawer(options){
 $.extend(SceneJS_ShapeDrawer.prototype,
 	 ShapeDrawer.prototype);
 
-// Adds a shape to the scene
+function jsonObject(shape,transform,id){
+  var quat = new Ammo.btQuaternion();
+  var r = transform.getRotation();
+  quat.setValue(r.x(),r.y(),r.z(),r.w());
+  var a = quat.getAxis();
+  var origin = transform.getOrigin();
+  var json = false;
+  switch(shape.getShapeType()){
+  case DemoApplication.prototype.CYLINDER_SHAPE_PROXYTYPE:
+    shape = Ammo.castObject(shape,Ammo.btCylinderShape);
+    var radius = shape.getRadius();
+    var up = shape.getUpAxis();
+    var he = shape.getHalfExtentsWithoutMargin();
+    var height = 1;
+    switch(up){
+    case 0: height=he.x(); break;
+    case 1: height=he.y(); break;
+    case 2: height=he.z(); break;
+    }
+    var c = makeCylinder(radius, height, 20, 2);
+    json = {
+      type:"translate",
+      //id:"trans",
+      x:0.0,
+      y:0.0,
+      z:0.0,
+      nodes:[{
+	  type:"rotate",
+	  //id:"rot"+i,
+	  angle:0,
+	  x:0,
+	  y:0,
+	  z:1,
+	  nodes:[{
+	      type:"rotate",
+	      angle:90,
+	      x:0,
+	      y:1,
+	      z:0,
+	      nodes:[{
+		  type: "geometry",
+		  primitive:"triangles",
+		  positions:c.positions,
+		  normals:c.normals,
+		  indices:c.indices
+		}]
+	    }]
+	}]
+    };
+    break;
+
+  case DemoApplication.prototype.BOX_SHAPE_PROXYTYPE:
+    shape = Ammo.castObject(shape,Ammo.btBoxShape);
+    var halfExtents = shape.getHalfExtentsWithMargin();
+    json = {
+      type:"translate",
+      //id:"trans"+i,
+      x:origin.x(),
+      y:origin.y(),
+      z:origin.z(),
+      nodes:[{
+	  type:"rotate",
+	  //id:"rot"+i,
+	  angle:quat.getAngle()*180/Math.PI,
+	  x:a.x(),
+	  y:a.y(),
+	  z:a.z(),
+	  nodes:[{
+	      type:"name",
+	      //id:"shape"+i,
+	      nodes:[{
+		  type: "cube",
+		  xSize:halfExtents.getX(),
+		  ySize:halfExtents.getY(),
+		  zSize:halfExtents.getZ()
+		}]
+	    }]
+	}]
+    };
+    break;
+  }
+
+  // Set identifyer
+  if(id!=undefined){
+    json.id = "trans"+id;
+    json.nodes[0].id = "rot"+id;
+    json.nodes[0].nodes[0].id = "shape"+id;
+  }
+
+  return json;
+}
+
+// Add a vehicle to the scene
+SceneJS_ShapeDrawer.prototype.addVehicle = function(v,wheelshape){
+  this.vehicles.push(v);
+  this.wheelshapes.push(wheelshape);
+  var t = new Ammo.btTransform();
+  t.setIdentity();
+  var q = this.tempQuaternion;
+  t.setRotation(new Ammo.btVector3(0,0,1),Math.PI/2);
+  for(var i=0;i<v.getNumWheels(); i++){
+    this.scene.findNode("shapes").add("node",jsonObject(wheelshape,t,"vehicle"+this.vehicles.length+"_wheel_"+i));
+    m_vehicle.updateWheelTransform(i,true);
+    var transform = m_vehicle.getWheelInfo(i).get_m_worldTransform();
+
+    var quat = this.tempQuaternion;
+    // Get position and rotation
+    var origin = transform.getOrigin();
+    var r = transform.getRotation();
+    quat.setValue(r.x(),r.y(),r.z(),r.w());
+    this.scene.findNode("trans"+"vehicle"+this.vehicles.length+"_wheel_"+i)
+      .set({x:origin.x(),y:origin.y(),z:origin.z()});
+    var a = quat.getAxis();
+    this.scene.findNode("rot"+"vehicle"+this.vehicles.length+"_wheel_"+i)
+      .set({ angle:quat.getAngle()*180/Math.PI, x:a.x(),  y:a.y(),  z:a.z()  });    
+  }
+};
+
+// Adds a rigid body to the scene
 SceneJS_ShapeDrawer.prototype.add = function(body,shape){
   var scene = this.scene;
   this.bodies.push(body);
@@ -331,228 +450,295 @@ SceneJS_ShapeDrawer.prototype.add = function(body,shape){
 	      }]
 	  });
     break;
+  case DemoApplication.prototype.COMPOUND_SHAPE_PROXYTYPE:
+    this.drawbody.push(true);
+    var n = shape.getNumChildShapes();
+    var jsons = [];
+    for(var j=0; j<n; j++){
+      var childShape = shape.getChildShape(j);
+      var childTransform = shape.getChildTransform(j);
+      jsons.push(jsonObject(childShape,childTransform));
+    }
+
+    // Add the compound object
+    scene.findNode("shapes").add("node",{
+	type:"translate",
+	  id:"trans"+i,
+	  x:0.0,
+	  y:0.0,
+	  z:0.0,
+	  nodes:[{
+	    type:"rotate",
+	      id:"rot"+i,
+	      angle:0,
+	      x:0,
+	      y:0,
+	      z:1,
+	      nodes:[{
+		type:"rotate",
+		  angle:0,
+		  x:1,
+		  y:0,
+		  z:0,
+		  nodes:jsons
+		  }]
+	      }]
+	  });
+
+
+      /*
+    var transform = this.tempTransform;
+    var quat = this.tempQuaternion;
+    for(var i=0; i<this.bodies.length; i++){
+      if(this.drawbody[i]){
+	// Get position and rotation
+	var pos = [];
+	this.bodies[i].getMotionState().getWorldTransform(transform);
+	var origin = transform.getOrigin();
+	pos[0] = origin.x();
+	pos[1] = origin.y();
+	pos[2] = origin.z();
+	var r = transform.getRotation();
+	quat.setValue(r.x(),r.y(),r.z(),r.w());
+	this.scene.findNode("trans"+i).set({
+	    x:pos[0],
+	      y:pos[1],
+	      z:pos[2]
+	      });
+	var a = quat.getAxis();
+	this.scene.findNode("rot"+i).set({
+	    angle:quat.getAngle()*180/Math.PI,
+	      x:a.x(),
+	      y:a.y(),
+	      z:a.z()
+	      });
+      }
+    }
+      */
+    break;
   default:
     throw "Shape proxytype "+shapeType+" not supported... yet.";
     break;
   }
-
-  // --- CYLINDER ALONG Z AXIS ---
-  function makeCylinder(radius,halfLength, slices, slices2){
-    var normalData = [];
-    var vertexPositionData = [];
-    var indexData = [];
-    var tri = 0;
-    for(var i=0; i<slices; i++){
-      var theta = i * Math.PI / slices;
-      var sinTheta = Math.sin(theta);
-      var cosTheta = Math.cos(theta);
-
-      var theta = (i+0.0)*2.0*Math.PI/slices;
-      var nextTheta = (i+1.0)*2.0*Math.PI/slices;
-
-      var sinTheta = Math.sin(theta);
-      var cosTheta = Math.cos(theta);
-      var sinNextTheta = Math.sin(nextTheta);
-      var cosNextTheta = Math.cos(nextTheta);
-
-      // Top triangle
-      normalData.push(0.0);
-      normalData.push(0.0);
-      normalData.push(1.0);
-      vertexPositionData.push(0.0);
-      vertexPositionData.push(0.0);
-      vertexPositionData.push(halfLength);
-      indexData.push(tri);
-
-      tri++;
-      normalData.push(0.0);
-      normalData.push(0.0);
-      normalData.push(1.0);
-      vertexPositionData.push(radius*Math.cos(theta));
-      vertexPositionData.push(radius*Math.sin(theta));
-      vertexPositionData.push(halfLength);
-      indexData.push(tri);
-
-      tri++;
-      normalData.push(0.0);
-      normalData.push(0.0);
-      normalData.push(1.0);
-      vertexPositionData.push(radius*Math.cos(nextTheta));
-      vertexPositionData.push(radius*Math.sin(nextTheta));
-      vertexPositionData.push(halfLength);
-      indexData.push(tri);
-
-      // front left upper triangle
-      tri++;
-      normalData.push(Math.cos(theta));
-      normalData.push(Math.sin(theta));
-      normalData.push(0.0);
-      vertexPositionData.push(radius*Math.cos(theta));
-      vertexPositionData.push(radius*Math.sin(theta));
-      vertexPositionData.push(halfLength);
-      indexData.push(tri);
-
-      tri++;
-      normalData.push(Math.cos(nextTheta));
-      normalData.push(Math.sin(nextTheta));
-      normalData.push(0.0);
-      vertexPositionData.push(radius*Math.cos(nextTheta));
-      vertexPositionData.push(radius*Math.sin(nextTheta));
-      vertexPositionData.push(halfLength);
-      indexData.push(tri);
-
-      tri++;
-      normalData.push(Math.cos(theta));
-      normalData.push(Math.sin(theta));
-      normalData.push(0.0);
-      vertexPositionData.push(radius*Math.cos(theta));
-      vertexPositionData.push(radius*Math.sin(theta));
-      vertexPositionData.push(-halfLength);
-      indexData.push(tri);
-
-
-      // front right bottom triangle
-      tri++;
-      normalData.push(Math.cos(nextTheta));
-      normalData.push(Math.sin(nextTheta));
-      normalData.push(0.0);
-      vertexPositionData.push(radius*Math.cos(nextTheta));
-      vertexPositionData.push(radius*Math.sin(nextTheta));
-      vertexPositionData.push(halfLength);
-      indexData.push(tri);
-
-      tri++;
-      normalData.push(Math.cos(nextTheta));
-      normalData.push(Math.sin(nextTheta));
-      normalData.push(0.0);
-      vertexPositionData.push(radius*Math.cos(nextTheta));
-      vertexPositionData.push(radius*Math.sin(nextTheta));
-      vertexPositionData.push(-halfLength);
-      indexData.push(tri);
-
-      tri++;
-      normalData.push(Math.cos(theta));
-      normalData.push(Math.sin(theta));
-      normalData.push(0.0);
-      vertexPositionData.push(radius*Math.cos(theta));
-      vertexPositionData.push(radius*Math.sin(theta));
-      vertexPositionData.push(-halfLength);
-      indexData.push(tri);
-
-
-      // Bottom triangle
-      tri++;
-      normalData.push(0.0);
-      normalData.push(0.0);
-      normalData.push(-1.0);
-      vertexPositionData.push(radius*Math.cos(nextTheta));
-      vertexPositionData.push(radius*Math.sin(nextTheta));
-      vertexPositionData.push(-halfLength);
-      indexData.push(tri);
-
-      tri++;
-      normalData.push(0.0);
-      normalData.push(0.0);
-      normalData.push(-1.0);
-      vertexPositionData.push(radius*Math.cos(theta));
-      vertexPositionData.push(radius*Math.sin(theta));
-      vertexPositionData.push(-halfLength);
-      indexData.push(tri);
-
-      tri++;
-      normalData.push(0.0);
-      normalData.push(0.0);
-      normalData.push(-1.0);
-      vertexPositionData.push(0.0);
-      vertexPositionData.push(0.0);
-      vertexPositionData.push(-halfLength);
-      indexData.push(tri);
-
-      tri++;
-    }
-    return {positions:vertexPositionData,
-	    normals:normalData,
-	    indices:indexData};
-  }
-
-  // --- CYLINDER ALONG Z AXIS ---
-  function makeCone(radius, height, slices){
-    var normalData = [];
-    var vertexPositionData = [];
-    var indexData = [];
-    var tri = 0;
-    for(var i=0; i<slices; i++){
-      var theta = i * Math.PI / slices;
-      var sinTheta = Math.sin(theta);
-      var cosTheta = Math.cos(theta);
-
-      var theta = (i+0.0)*2.0*Math.PI/slices;
-      var nextTheta = (i+1.0)*2.0*Math.PI/slices;
-
-      var sinTheta = Math.sin(theta);
-      var cosTheta = Math.cos(theta);
-      var sinNextTheta = Math.sin(nextTheta);
-      var cosNextTheta = Math.cos(nextTheta);
-
-      // Top
-      normalData.push(Math.cos((theta+nextTheta)*0.5));
-      normalData.push(Math.sin((theta+nextTheta)*0.5));
-      normalData.push(Math.sin(Math.atan(radius/height)));
-      vertexPositionData.push(0.0);
-      vertexPositionData.push(0.0);
-      vertexPositionData.push(height*0.5);
-      indexData.push(tri++);
-
-      // Outer bottom 1
-      normalData.push(Math.cos(theta));
-      normalData.push(Math.sin(theta));
-      normalData.push(Math.sin(Math.atan(radius/height)));
-      vertexPositionData.push(radius*Math.cos(theta));
-      vertexPositionData.push(radius*Math.sin(theta));
-      vertexPositionData.push(-height*0.5);
-      indexData.push(tri++);
-
-      // Outer bottom 2
-      normalData.push(Math.cos(nextTheta));
-      normalData.push(Math.sin(nextTheta));
-      normalData.push(Math.sin(Math.atan(radius/height)));
-      vertexPositionData.push(radius*Math.cos(nextTheta));
-      vertexPositionData.push(radius*Math.sin(nextTheta));
-      vertexPositionData.push(-height*0.5);
-      indexData.push(tri++);
-
-      // Bottom - center
-      normalData.push(0.0);
-      normalData.push(0.0);
-      normalData.push(-1.0);
-      vertexPositionData.push(radius*Math.cos(nextTheta));
-      vertexPositionData.push(radius*Math.sin(nextTheta));
-      vertexPositionData.push(-height*0.5);
-      indexData.push(tri++);
-
-      // Bottom - outer 1
-      normalData.push(0.0);
-      normalData.push(0.0);
-      normalData.push(-1.0);
-      vertexPositionData.push(radius*Math.cos(theta));
-      vertexPositionData.push(radius*Math.sin(theta));
-      vertexPositionData.push(-height*0.5);
-      indexData.push(tri++);
-
-      // Bottom - outer 2
-      normalData.push(0.0);
-      normalData.push(0.0);
-      normalData.push(-1.0);
-      vertexPositionData.push(0.0);
-      vertexPositionData.push(0.0);
-      vertexPositionData.push(-height*0.5);
-      indexData.push(tri++);
-    }
-    return {positions:vertexPositionData,
-	    normals:normalData,
-	    indices:indexData};
-  }
 };
+
+
+// --- CYLINDER ALONG Z AXIS ---
+function makeCylinder(radius,halfLength, slices, slices2){
+  var normalData = [];
+  var vertexPositionData = [];
+  var indexData = [];
+  var tri = 0;
+  for(var i=0; i<slices; i++){
+    var theta = i * Math.PI / slices;
+    var sinTheta = Math.sin(theta);
+    var cosTheta = Math.cos(theta);
+
+    var theta = (i+0.0)*2.0*Math.PI/slices;
+    var nextTheta = (i+1.0)*2.0*Math.PI/slices;
+
+    var sinTheta = Math.sin(theta);
+    var cosTheta = Math.cos(theta);
+    var sinNextTheta = Math.sin(nextTheta);
+    var cosNextTheta = Math.cos(nextTheta);
+
+    // Top triangle
+    normalData.push(0.0);
+    normalData.push(0.0);
+    normalData.push(1.0);
+    vertexPositionData.push(0.0);
+    vertexPositionData.push(0.0);
+    vertexPositionData.push(halfLength);
+    indexData.push(tri);
+
+    tri++;
+    normalData.push(0.0);
+    normalData.push(0.0);
+    normalData.push(1.0);
+    vertexPositionData.push(radius*Math.cos(theta));
+    vertexPositionData.push(radius*Math.sin(theta));
+    vertexPositionData.push(halfLength);
+    indexData.push(tri);
+
+    tri++;
+    normalData.push(0.0);
+    normalData.push(0.0);
+    normalData.push(1.0);
+    vertexPositionData.push(radius*Math.cos(nextTheta));
+    vertexPositionData.push(radius*Math.sin(nextTheta));
+    vertexPositionData.push(halfLength);
+    indexData.push(tri);
+
+    // front left upper triangle
+    tri++;
+    normalData.push(Math.cos(theta));
+    normalData.push(Math.sin(theta));
+    normalData.push(0.0);
+    vertexPositionData.push(radius*Math.cos(theta));
+    vertexPositionData.push(radius*Math.sin(theta));
+    vertexPositionData.push(halfLength);
+    indexData.push(tri);
+
+    tri++;
+    normalData.push(Math.cos(nextTheta));
+    normalData.push(Math.sin(nextTheta));
+    normalData.push(0.0);
+    vertexPositionData.push(radius*Math.cos(nextTheta));
+    vertexPositionData.push(radius*Math.sin(nextTheta));
+    vertexPositionData.push(halfLength);
+    indexData.push(tri);
+
+    tri++;
+    normalData.push(Math.cos(theta));
+    normalData.push(Math.sin(theta));
+    normalData.push(0.0);
+    vertexPositionData.push(radius*Math.cos(theta));
+    vertexPositionData.push(radius*Math.sin(theta));
+    vertexPositionData.push(-halfLength);
+    indexData.push(tri);
+
+
+    // front right bottom triangle
+    tri++;
+    normalData.push(Math.cos(nextTheta));
+    normalData.push(Math.sin(nextTheta));
+    normalData.push(0.0);
+    vertexPositionData.push(radius*Math.cos(nextTheta));
+    vertexPositionData.push(radius*Math.sin(nextTheta));
+    vertexPositionData.push(halfLength);
+    indexData.push(tri);
+
+    tri++;
+    normalData.push(Math.cos(nextTheta));
+    normalData.push(Math.sin(nextTheta));
+    normalData.push(0.0);
+    vertexPositionData.push(radius*Math.cos(nextTheta));
+    vertexPositionData.push(radius*Math.sin(nextTheta));
+    vertexPositionData.push(-halfLength);
+    indexData.push(tri);
+
+    tri++;
+    normalData.push(Math.cos(theta));
+    normalData.push(Math.sin(theta));
+    normalData.push(0.0);
+    vertexPositionData.push(radius*Math.cos(theta));
+    vertexPositionData.push(radius*Math.sin(theta));
+    vertexPositionData.push(-halfLength);
+    indexData.push(tri);
+
+
+    // Bottom triangle
+    tri++;
+    normalData.push(0.0);
+    normalData.push(0.0);
+    normalData.push(-1.0);
+    vertexPositionData.push(radius*Math.cos(nextTheta));
+    vertexPositionData.push(radius*Math.sin(nextTheta));
+    vertexPositionData.push(-halfLength);
+    indexData.push(tri);
+
+    tri++;
+    normalData.push(0.0);
+    normalData.push(0.0);
+    normalData.push(-1.0);
+    vertexPositionData.push(radius*Math.cos(theta));
+    vertexPositionData.push(radius*Math.sin(theta));
+    vertexPositionData.push(-halfLength);
+    indexData.push(tri);
+
+    tri++;
+    normalData.push(0.0);
+    normalData.push(0.0);
+    normalData.push(-1.0);
+    vertexPositionData.push(0.0);
+    vertexPositionData.push(0.0);
+    vertexPositionData.push(-halfLength);
+    indexData.push(tri);
+
+    tri++;
+  }
+  return {positions:vertexPositionData,
+      normals:normalData,
+      indices:indexData};
+}
+
+// --- CYLINDER ALONG Z AXIS ---
+function makeCone(radius, height, slices){
+  var normalData = [];
+  var vertexPositionData = [];
+  var indexData = [];
+  var tri = 0;
+  for(var i=0; i<slices; i++){
+    var theta = i * Math.PI / slices;
+    var sinTheta = Math.sin(theta);
+    var cosTheta = Math.cos(theta);
+
+    var theta = (i+0.0)*2.0*Math.PI/slices;
+    var nextTheta = (i+1.0)*2.0*Math.PI/slices;
+
+    var sinTheta = Math.sin(theta);
+    var cosTheta = Math.cos(theta);
+    var sinNextTheta = Math.sin(nextTheta);
+    var cosNextTheta = Math.cos(nextTheta);
+
+    // Top
+    normalData.push(Math.cos((theta+nextTheta)*0.5));
+    normalData.push(Math.sin((theta+nextTheta)*0.5));
+    normalData.push(Math.sin(Math.atan(radius/height)));
+    vertexPositionData.push(0.0);
+    vertexPositionData.push(0.0);
+    vertexPositionData.push(height*0.5);
+    indexData.push(tri++);
+
+    // Outer bottom 1
+    normalData.push(Math.cos(theta));
+    normalData.push(Math.sin(theta));
+    normalData.push(Math.sin(Math.atan(radius/height)));
+    vertexPositionData.push(radius*Math.cos(theta));
+    vertexPositionData.push(radius*Math.sin(theta));
+    vertexPositionData.push(-height*0.5);
+    indexData.push(tri++);
+
+    // Outer bottom 2
+    normalData.push(Math.cos(nextTheta));
+    normalData.push(Math.sin(nextTheta));
+    normalData.push(Math.sin(Math.atan(radius/height)));
+    vertexPositionData.push(radius*Math.cos(nextTheta));
+    vertexPositionData.push(radius*Math.sin(nextTheta));
+    vertexPositionData.push(-height*0.5);
+    indexData.push(tri++);
+
+    // Bottom - center
+    normalData.push(0.0);
+    normalData.push(0.0);
+    normalData.push(-1.0);
+    vertexPositionData.push(radius*Math.cos(nextTheta));
+    vertexPositionData.push(radius*Math.sin(nextTheta));
+    vertexPositionData.push(-height*0.5);
+    indexData.push(tri++);
+
+    // Bottom - outer 1
+    normalData.push(0.0);
+    normalData.push(0.0);
+    normalData.push(-1.0);
+    vertexPositionData.push(radius*Math.cos(theta));
+    vertexPositionData.push(radius*Math.sin(theta));
+    vertexPositionData.push(-height*0.5);
+    indexData.push(tri++);
+
+    // Bottom - outer 2
+    normalData.push(0.0);
+    normalData.push(0.0);
+    normalData.push(-1.0);
+    vertexPositionData.push(0.0);
+    vertexPositionData.push(0.0);
+    vertexPositionData.push(-height*0.5);
+    indexData.push(tri++);
+  }
+  return {positions:vertexPositionData,
+      normals:normalData,
+      indices:indexData};
+}
 
 SceneJS_ShapeDrawer.prototype.idleFunc = function(){};
 
@@ -584,6 +770,27 @@ SceneJS_ShapeDrawer.prototype.update = function(){
 	    });
     }
   }
+
+  // --- Update vehicles ---
+  for(var vi = 0; vi<this.vehicles.length; vi++){
+    var v = this.vehicles[vi];
+    var t = new Ammo.btTransform();
+    t.setIdentity();
+    for(var i=0;i<v.getNumWheels(); i++){
+      m_vehicle.updateWheelTransform(i,true);
+      var transform = m_vehicle.getWheelInfo(i).get_m_worldTransform();
+      var quat = this.tempQuaternion;
+      // Get position and rotation
+      var origin = transform.getOrigin();
+      var r = transform.getRotation();
+      quat.setValue(r.x(),r.y(),r.z(),r.w());
+      this.scene.findNode("trans"+"vehicle"+this.vehicles.length+"_wheel_"+i)
+	.set({x:origin.x(),y:origin.y(),z:origin.z()});
+      var a = quat.getAxis();
+      this.scene.findNode("rot"+"vehicle"+this.vehicles.length+"_wheel_"+i)
+	.set({ angle:quat.getAngle()*180/Math.PI, x:a.x(),  y:a.y(),  z:a.z()  });    
+    }
+  }
 };
 
 SceneJS_ShapeDrawer.prototype.eye = function(e){
@@ -596,6 +803,13 @@ SceneJS_ShapeDrawer.prototype.target = function(e){
 
 SceneJS_ShapeDrawer.prototype.sun = function(pos){
   this.scene.findNode("light").set("pos",{x:pos.x(), y:pos.y(), z:pos.z()});
+};
+
+SceneJS_ShapeDrawer.prototype.fog = function(fogOn){
+  if(fogOn)
+    this.scene.findNode("fog").set("density",20);
+  else
+    this.scene.findNode("fog").set("density",0);
 };
 
 // Set the HUD text

@@ -8,12 +8,17 @@ function ShapeDrawer(options){
   this.bodies = [];
   this.shapes = [];
   this.drawbody = [];
+  
+  // Vehicles and their wheelshapes - one wheelshape per vehicle
+  this.vehicles = [];
+  this.wheelshapes = [];
 }
 
 /**
  * 
  */
 ShapeDrawer.prototype.update = function(){
+  /*
   for(var i=0; i<this.bodies.length; i++){
     var shape = this.bodies[i].getCollisionShape();
     if(!shape)
@@ -31,6 +36,7 @@ ShapeDrawer.prototype.update = function(){
       break;
     }
   }
+  */
 };
 
 ShapeDrawer.prototype.add = function(body){

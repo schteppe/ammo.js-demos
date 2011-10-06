@@ -76,13 +76,36 @@ DemoApplication = function(options){
     });
   m_shapeDrawer.canvas.oncontextmenu = function(){ return false; };
   
-  // Key callbacks
+  function mapKeyCodeToString(keycode){
+    switch(keycode){
+    case th.keys.LEFT:  return 'left';  break;
+    case th.keys.RIGHT: return 'right'; break;
+    case th.keys.DOWN:  return 'down';  break;
+    case th.keys.UP:    return 'up';    break;
+    default:
+      return String.fromCharCode(keycode).toLowerCase();
+    }
+  }
+
+  // Keydown callbacks
   window.addEventListener('keydown', function(e){
-      var char = String.fromCharCode(e.keyCode).toLowerCase();
-      var f = th.keyboardCallbacksInternal[char];
+      var f;
+      f = th.keyboardCallbacksInternal[mapKeyCodeToString(e.keyCode)];
       if(f)
 	f(e,th);
-	//th.keyboardCallback(e);
+    });
+
+  // Keyup callbacks
+  window.addEventListener('keyup', function(e){
+      var f;
+      f = th.keyboardUpCallbacksInternal[mapKeyCodeToString(e.keyCode)];
+      if(f)
+	f(e,th);
+      /*
+      var char = String.fromCharCode(e.keyCode).toLowerCase();
+      var f = th.keyboardUpCallbacksInternal[char];
+      if(f) f(e,th);
+      */
     });
 
   // get canvas info
@@ -203,6 +226,10 @@ DemoApplication.prototype.setDebugMode = function(mode){
 DemoApplication.prototype.setAzi = function(azi){
   this.m_azi = azi;
 };
+	
+DemoApplication.prototype.setEle = function(ele){
+  this.m_ele = ele;
+};
 
 DemoApplication.prototype.setCameraUp = function(camUp){
   this.m_cameraUp = camUp;
@@ -314,7 +341,7 @@ DemoApplication.prototype.getCameraDistance = function(){
 };
 
 DemoApplication.prototype.setCameraDistance = function(dist){
-  this.cameraDistance = dist;
+  this.m_cameraDistance = dist;
 };
 
 DemoApplication.prototype.moveAndDisplay = function(){
@@ -546,6 +573,27 @@ DemoApplication.prototype.getRayTo = function(x, y){
   return rayTo;
 };
 
+// KEYS
+DemoApplication.prototype.keys = {BACKSPACE: 8,
+				  TAB: 9,
+				  ENTER: 13,
+				  SHIFT: 16,
+				  CTRL: 17,
+				  ALT: 18,
+				  PAUSE: 19,
+				  CAPS: 20,
+				  ESCAPE: 27,
+				  PAGEUP: 33,
+				  PAGEDOWN: 34,
+				  END: 35,
+				  HOME: 36,
+				  LEFT: 37,
+				  UP: 38,
+				  RIGHT: 39,
+				  DOWN: 40,
+				  INSERT: 45,
+				  DELETE: 46};
+
 DemoApplication.prototype.mousePickClamping = 30.0;
 
 DemoApplication.prototype.BOX_SHAPE_PROXYTYPE = 0;
@@ -587,6 +635,7 @@ DemoApplication.prototype.INVALID_SHAPE_PROXYTYPE = 35;
 DemoApplication.prototype.MAX_BROADPHASE_COLLISION_TYPES = 36;
 
 DemoApplication.prototype.MAX_SHOOTBOXES = 10;
+DemoApplication.prototype.DISABLE_DEACTIVATION = 4;
 
 // float mass, const btTransform& startTransform,btCollisionShape* shape
 DemoApplication.prototype.localCreateRigidBody = function(mass, startTransform, shape){
@@ -613,7 +662,14 @@ DemoApplication.prototype.localCreateRigidBody = function(mass, startTransform, 
   return body;
 };
 
+DemoApplication.prototype.addVehicle = function(v,wheelshape){
+  this.m_dynamicsWorld.addVehicle(v);
+  this.m_shapeDrawer.addVehicle(v,wheelshape);
+};
+
 DemoApplication.prototype.DBG_NoHelpText = 1;
+
+DemoApplication.prototype.keyboardUpCallbacksInternal = {};
 
 DemoApplication.prototype.keyboardCallbacksInternal = {
   q: function(e,da){ console.log("Quit? You can't quit!"); },
@@ -754,8 +810,10 @@ DemoApplication.prototype.keyboardCallbacksInternal = {
 DemoApplication.prototype.keyboardCallback = function(k){
   $.extend(this.keyboardCallbacksInternal,k);
 };
+DemoApplication.prototype.keyboardUpCallback = function(k){
+  $.extend(this.keyboardUpCallbacksInternal,k);
+};
 
-DemoApplication.prototype.keyboardUpCallback = function(key, x, y){};
 DemoApplication.prototype.specialKeyboard = function(key, x, y){};
 DemoApplication.prototype.specialKeyboardUp = function(key, x, y){};
 
@@ -1008,12 +1066,11 @@ DemoApplication.prototype.mouseMotionFunc = function(event){
 // Needed?
 DemoApplication.prototype.displayCallback = function(){};
 
-DemoApplication.prototype.renderme = function(){
-  // TODO
-};
+// Override me!
+DemoApplication.prototype.renderme = function(){};
 
-// Used???
 DemoApplication.prototype.renderscene = function(pass){
+  /*
   var m = new Float32Array(16);
   var rot = new Ammo.btMatrix3x3(); rot.setIdentity();
   var numObjects = this.m_dynamicsWorld.getNumCollisionObjects();
@@ -1032,17 +1089,13 @@ DemoApplication.prototype.renderscene = function(pass){
     var wireColor = new Ammo.btVector3(1.0,1.0,0.5); //wants deactivation
     if(i&1) wireColor=btVector3(0.0,0.0,1.0);
     ///color differently for active, sleeping, wantsdeactivation states
-    if (colObj.getActivationState() == 1) //active
-      {
-	if (i & 1)
-	  {
-	    wireColor += new Ammo.btVector3(1.0,0.0,0.);
-	    }
-	  else
-	    {			
-	      wireColor += new Ammo.btVector3(0.5, 0.0, 0.0);
-	    }
-	}
+    if(colObj.getActivationState() == 1){ //active
+      if(i & 1){
+	wireColor += new Ammo.btVector3(1.0,0.0,0.);
+      } else {			
+	wireColor += new Ammo.btVector3(0.5, 0.0, 0.0);
+      }
+    }
      //ISLAND_SLEEPING
     if(colObj.getActivationState()==2){
       if(i&1)
@@ -1065,7 +1118,8 @@ DemoApplication.prototype.renderscene = function(pass){
       case	2:	m_shapeDrawer.drawOpenGL(m,colObj.getCollisionShape(),wireColor*btScalar(0.3),0,aabbMin,aabbMax);break;
       }
     }
-  }
+    }
+  */
 };
 
 DemoApplication.prototype.swapBuffers = function(){};
