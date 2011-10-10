@@ -11,9 +11,11 @@ The second class is _ShapeViewer_ and it is also supposed to be extended. ShapeV
 * _other/_ External libs such as ammo.js, jquery, scenegraph libs
 
 ## Howto: Add a new Demo
-Create a folder with a unique name in _demos/_, eg. _demos/MyDemo/_. Copy .js and .html files from _demos/TemplateDemo/_ into your new folder and start coding.
+1. Create a folder with a unique name in _demos/_, eg. _demos/MyDemo/_. 
+2. Copy .js and .html files from _demos/TemplateDemo/_ into your new folder.
+3. Start coding.
 
 ## Todo
 * Template demo with explanations
 * Make SceneJS_ShapeDrawer support more shapes
-* Support for more WebGL scenegraphs - Three.js? Extend the ShapeDrawer class (see SceneJS_ShapeDrawer for reference)
+* Support for more WebGL scenegraphs - Three.js. Extend the ShapeDrawer class (see SceneJS_ShapeDrawer for reference)
