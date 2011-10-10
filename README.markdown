@@ -1,4 +1,9 @@
 # ammo.js-demos
+This project aims to produce easy-to-use demo classes, that can be used to view physics simulations in ammo.js in any WebGL scenegraph.
+
+There are two main classes in the framework. The first one is the _DemoApplication_ that is supposed to be extended by the user. The DemoApplication base class contains functions for mouse picking and creating rigid bodies.
+
+The second class is _ShapeViewer_ and it is also supposed to be extended. ShapeViewer provides a simple interface toward a WebGL scenegraph and can through this interface be used by the DemoApplication.
 
 ## Code structure
 * _src/_ Contains code for the demo framework, which makes ammo.js collaborate with a WebGL scenegraph.
