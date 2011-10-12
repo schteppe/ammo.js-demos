@@ -1,3 +1,5 @@
+<img src="http://granular.cs.umu.se/browserphysics/wp-content/uploads/2011/10/Sk%C3%A4rmbild-6.png">
+
 # ammo.js-demos
 This project aims to produce easy-to-use demo classes, that can be used to view physics simulations in ammo.js in any WebGL scenegraph.
 
