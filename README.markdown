@@ -1,6 +1,7 @@
+# ammo.js-demos
+
 <img src="http://granular.cs.umu.se/browserphysics/wp-content/uploads/2011/10/Sk%C3%A4rmbild-6.png" width="30%" align="right">
 
-# ammo.js-demos
 This project aims to produce easy-to-use demo classes, that can be used to view physics simulations in ammo.js in any WebGL scenegraph.
 
 There are two main classes in the framework. The first one is the _DemoApplication_ that is supposed to be extended by the user. The DemoApplication base class contains functions for mouse picking and creating rigid bodies.
