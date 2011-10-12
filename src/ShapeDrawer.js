@@ -43,10 +43,19 @@ ShapeDrawer.prototype.add = function(body){
   this.bodies.push(body);
 };
 
+// Implement me!
 ShapeDrawer.prototype.target = function(t){
-
+  console.log("ShapeDrawer.prototype.target must be implemented!");
 };
-
 ShapeDrawer.prototype.eye = function(e){
-
+  console.log("ShapeDrawer.prototype.eye must be implemented!");
+};
+ShapeDrawer.prototype.getScreenWidth = function(){
+  console.log("ShapeDrawer.prototype.getScreenWidth must be implemented!");
+};
+ShapeDrawer.prototype.getScreenHeight = function(){
+  console.log("ShapeDrawer.prototype.getScreenHeight must be implemented!");
+};
+ShapeDrawer.prototype.enableShadows = function(enable){
+  console.log("ShapeDrawer.prototype.enableShadows must be implemented!");
 };

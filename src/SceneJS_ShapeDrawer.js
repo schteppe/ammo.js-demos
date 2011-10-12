@@ -826,3 +826,11 @@ SceneJS_ShapeDrawer.prototype.hud = function(text){
     this.oldHudText = text;
   }
 };
+
+SceneJS_ShapeDrawer.prototype.getScreenWidth = function(){
+  return this.canvas.width;
+};
+
+SceneJS_ShapeDrawer.prototype.getScreenHeight = function(){
+  return this.canvas.height;
+};

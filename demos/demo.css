@@ -2,6 +2,10 @@
     margin:0;
 }
 
+body {
+    overflow:hidden;
+}
+
 canvas {
     /* background-color:black;*/
 }
@@ -35,4 +39,16 @@ canvas {
     left:888px;
     padding:10px;
     width:300px;
+}
+
+#threeinfo a {
+    color:white;
+}
+#threeinfo {
+    font-family:Georgia;
+    color:#eee;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:1000;
 }

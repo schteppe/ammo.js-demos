@@ -35,6 +35,14 @@ MyDemoApplication.prototype.initPhysics = function(){
   aabbTransform.setIdentity();
   this.localCreateRigidBody(0, aabbTransform, aabbShape);
 
+  // Set keyboard actions
+  var th = this;
+  this.keyboardCallback({e:function(e,da){
+	console.log("Pressed e");
+	var r = new RagDoll(th,th.tVec(0,0,0));
+      }
+    });
+
   // Reset scene
   this.clientResetScene();
 };
@@ -48,8 +56,4 @@ MyDemoApplication.prototype.clientMoveAndDisplay = function(){
   
   if(this.m_dynamicsWorld)
     this.m_dynamicsWorld.stepSimulation(ms / 1000000.0);
-};
-
-MyDemoApplication.prototype.keyboardCallback = function(e){
-  
 };

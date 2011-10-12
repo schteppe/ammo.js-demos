@@ -61,7 +61,7 @@ DemoApplication = function(options){
   this.m_startMotionStates = [];
 
   var m_shapeDrawer = th.m_shapeDrawer = settings.shapeDrawer;
-  var m_enableshadows = th.m_enableshadows = false;
+  var m_enableshadows = th.m_enableshadows = true;
   var m_sundirection = th.m_sundirection = new Ammo.btVector3(1000,-2000,1000);
   var m_defaultContactProcessingThreshold = th.m_defaultContactProcessingThreshold = this.BT_LARGE_FLOAT;
 
@@ -109,8 +109,8 @@ DemoApplication = function(options){
     });
 
   // get canvas info
-  this.m_glScreenWidth = m_shapeDrawer.canvas.width;
-  this.m_glScreenHeight = m_shapeDrawer.canvas.height;
+  this.m_glScreenWidth = m_shapeDrawer.getScreenWidth();
+  this.m_glScreenHeight = m_shapeDrawer.getScreenHeight();
 
   // Init stats
   var nstats = this.nstats = 20;
@@ -204,6 +204,7 @@ DemoApplication.prototype.setTexturing = function(enable){
 DemoApplication.prototype.setShadows = function(enable){
   var p = m_enableshadows;
   this.m_enableshadows = enable;
+  this.m_shapeDrawer.enableShadows(enable);
   return (p);
 };
 
@@ -680,7 +681,7 @@ DemoApplication.prototype.keyboardCallbacksInternal = {
   z: function(e,da){ da.zoomIn(); },
   x: function(e,da){ da.zoomOut(); },
   i: function(e,da){ da.toggleIdle(); },
-  g: function(e,da){ da.m_enableshadows=!da.m_enableshadows; },
+  g: function(e,da){ da.m_enableshadows=!da.m_enableshadows; da.m_shapeDrawer.enableShadows(da.m_enableshadows); },
   u: function(e,da){ da.m_shapeDrawer.enableTexture(!da.m_shapeDrawer.enableTexture(false)); },
   h: function(e,da){
     // Toggle profiling HUD
@@ -808,6 +809,7 @@ DemoApplication.prototype.keyboardCallbacksInternal = {
 // Example that sets the '+' button callback:
 // keyboardCallback({'+':function(event,demoapplication){...}})
 DemoApplication.prototype.keyboardCallback = function(k){
+  console.log("extendin!");
   $.extend(this.keyboardCallbacksInternal,k);
 };
 DemoApplication.prototype.keyboardUpCallback = function(k){
