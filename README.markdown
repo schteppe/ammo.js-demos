@@ -1,3 +1,4 @@
+<a href="http://granular.cs.umu.se/ammo/Demos/RagdollDemo/three.html"><img src="http://granular.cs.umu.se/browserphysics/wp-content/uploads/2011/10/Sk%C3%A4rmbild-6.png" width="120" height="100"></a>
 <a href="http://granular.cs.umu.se/ammo/Demos/BoxDemo/index.html"><img src="http://granular.cs.umu.se/ammo/Demos/BoxDemo/thumb.png" width="100" height="100"></a>
 <a href="http://granular.cs.umu.se/ammo/Demos/VehicleDemo/index.html"><img src="http://granular.cs.umu.se/ammo/Demos/VehicleDemo/thumb.png" width="100" height="100"></a>
 <a href="http://granular.cs.umu.se/ammo/Demos/RagdollDemo/index.html"><img src="http://granular.cs.umu.se/ammo/Demos/RagdollDemo/thumb.png" width="100" height="100"></a>
