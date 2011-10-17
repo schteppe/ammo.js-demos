@@ -377,6 +377,9 @@ SceneJS_ShapeDrawer.prototype.add = function(body,shape){
   case DemoApplication.prototype.STATIC_PLANE_PROXYTYPE:
     this.drawbody.push(false); // Don't draw!
     break;
+  case DemoApplication.prototype.TRIANGLE_MESH_SHAPE_PROXYTYPE:
+    this.drawbody.push(false); // Don't draw!
+    break;
   case DemoApplication.prototype.CAPSULE_SHAPE_PROXYTYPE:
     // Do a cylinder instead!
     this.drawbody.push(true); // Draw this body

@@ -24,12 +24,77 @@ MyDemoApplication.prototype.initPhysics = function(){
   this.m_dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
   this.m_dynamicsWorld.setGravity(this.tVec(0, -9.82, 0)); // DemoApplication.prototype.tVec(x,y,z) is a function that returns a temporary Ammo.btVector3, which is allocated by the DemoApplication. This way we don't need to use the "new" operator all the time and this improves performance. Don't use it for anything else than temporary things like this though.
 
-  // Create ground plate in the center of the scene
-  var groundShape = new Ammo.btBoxShape(this.tVec(20, 0.5, 40));
-  var groundTransform = new Ammo.btTransform();
-  groundTransform.setIdentity();
-  groundTransform.setOrigin(this.tVec(0, -3.0, 0));
-  var ground = this.localCreateRigidBody(0, groundTransform, groundShape);
+  if(false){
+    // Create ground plate in the center of the scene
+    var groundShape = new Ammo.btBoxShape(this.tVec(20, 0.5, 40));
+    var groundTransform = new Ammo.btTransform();
+    groundTransform.setIdentity();
+    groundTransform.setOrigin(this.tVec(0, -3.0, 0));
+    var ground = this.localCreateRigidBody(0, groundTransform, groundShape);
+  } else {
+
+    // create a triangle-mesh ground
+    var sizeofbtVector3 = 4*3;
+    var sizeofint = 4;
+    var vertStride = sizeofbtVector3;
+    var indexStride = 3*sizeofint;
+    var TRIANGLE_SIZE = 100;
+    var NUM_VERTS_X = 20;
+    var NUM_VERTS_Y = 20;
+    var totalVerts = NUM_VERTS_X*NUM_VERTS_Y;
+	
+    var totalTriangles = 2*(NUM_VERTS_X-1)*(NUM_VERTS_Y-1);
+
+    var m_vertices = [];
+    var gIndices = [];
+
+    for(var i=0; i<NUM_VERTS_X; i++){
+      for(var j=0; j<NUM_VERTS_Y; j++){
+	var wl = 0.2;
+	//height set to zero, but can also use curved landscape, just uncomment out the code
+	var height = 0.0;//20.f*sinf(float(i)*wl)*cosf(float(j)*wl);
+	//m_vertices[i+j*NUM_VERTS_X].setValue(
+	m_vertices.push(new Ammo.btVector3(
+					   (i-NUM_VERTS_X*0.5)*TRIANGLE_SIZE,
+					   height,
+					   (j-NUM_VERTS_Y*0.5)*TRIANGLE_SIZE)
+			);
+      }
+    }
+    
+    var index=0;
+    for ( var i=0; i<NUM_VERTS_X-1; i++){
+      for ( var j=0; j<NUM_VERTS_Y-1; j++){
+	gIndices[index++] = j*NUM_VERTS_X+i;
+	gIndices[index++] = j*NUM_VERTS_X+i+1;
+	gIndices[index++] = (j+1)*NUM_VERTS_X+i+1;
+
+	gIndices[index++] = j*NUM_VERTS_X+i;
+	gIndices[index++] = (j+1)*NUM_VERTS_X+i+1;
+	gIndices[index++] = (j+1)*NUM_VERTS_X+i;
+      }
+    }
+	
+    var m_indexVertexArrays = new btTriangleIndexVertexArray(totalTriangles,
+							     gIndices,
+							     indexStride,
+							     totalVerts,
+							     m_vertices[0].x(),
+							     vertStride);
+
+    var useQuantizedAabbCompression = true;
+    var groundShape = new btBvhTriangleMeshShape(m_indexVertexArrays,
+						 useQuantizedAabbCompression);
+
+    var tr = new Ammo.btTransform();
+    tr.setIdentity();
+    tr.setOrigin(new Ammo.btVector3(-10,-10,-10));
+
+    //m_collisionShapes.push(groundShape);
+
+    //create ground object
+    this.localCreateRigidBody(0,tr,groundShape);
+  }
 
   // Jump
   var jumpShape = new Ammo.btBoxShape(this.tVec(1, 0.5, 2));

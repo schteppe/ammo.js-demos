@@ -653,8 +653,8 @@ DemoApplication.prototype.localCreateRigidBody = function(mass, startTransform, 
   var myMotionState = new Ammo.btDefaultMotionState(startTransform);
   var cInfo = new Ammo.btRigidBodyConstructionInfo(mass,myMotionState,shape,localInertia);
   var body = new Ammo.btRigidBody(cInfo);
-  body.setLinearVelocity(new btVector3(0,0,0));
-  body.setAngularVelocity(new btVector3(0,0,0));
+  body.setLinearVelocity(new Ammo.btVector3(0,0,0));
+  body.setAngularVelocity(new Ammo.btVector3(0,0,0));
   body.setContactProcessingThreshold(this.m_defaultContactProcessingThreshold);
   this.m_dynamicsWorld.addRigidBody(body);
   this.m_shapeDrawer.add(body,shape);

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RagdollDemo</title>
+  <meta name="description" content="Ragdoll physics simulation using ammo.js, WebGL and Three.js" />
+  <meta name="keywords" content="ragdoll,ammo.js,ammo,bullet,bullet physics,webgl,physics,3d,3d physics,web physics,javascript" />
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <script src="../../other/jquery/jquery.js"></script>
+  <script src="../../other/jquery/jquery.mousewheel.js"></script>
+  <script src="../../other/ammo/ammo.js"></script>
+  <script src="../../src/ShapeDrawer.js"></script>
+  <script src="../../src/Three_ShapeDrawer.js"></script>
+  <script src="../../src/DemoApplication.js"></script>
+  <script src="RagdollDemo.js"></script>
+  <script src="Ragdoll.js"></script>
+  <script src="../../other/three/Three.js"></script>
+  <script src="../../other/three/Detector.js"></script>
+  <script src="../../other/three/RequestAnimationFrame.js"></script>
+  <link rel="stylesheet" media="screen" href="../demo.css" />
+</head>
+<body style="background-color:black;">
+  <script>
+    var s = new Three_ShapeDrawer();
+    var d = new MyDemoApplication({shapeDrawer:s});
+    $("#error").hide();
+  </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PendulumDemo</title>
+  <meta name="description" content="pendulum physics simulation using ammo.js, WebGL and Three.js" />
+  <meta name="keywords" content="pendulum,ammo.js,ammo,bullet,bullet physics,webgl,physics,3d,3d physics,web physics,javascript" />
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <script src="../../other/jquery/jquery.js"></script>
+  <script src="../../other/jquery/jquery.mousewheel.js"></script>
+  <script src="../../other/ammo/ammo.js"></script>
+  <script src="../../src/ShapeDrawer.js"></script>
+  <script src="../../src/Three_ShapeDrawer.js"></script>
+  <script src="../../src/DemoApplication.js"></script>
+  <script src="PendulumDemo.js"></script>
+  <script src="../../other/three/Three.js"></script>
+  <script src="../../other/three/Detector.js"></script>
+  <script src="../../other/three/RequestAnimationFrame.js"></script>
+  <link rel="stylesheet" media="screen" href="../demo.css" />
+</head>
+<div id="threeinfo">
+  <a href="http://github.com/mrdoob/three.js" target="_blank">three.js</a> + <a href="https://github.com/kripken/ammo.js" target="_blank">ammo.js</a> + <a href="http://steffe.se">Steffe</a> = <a href="http://granular.cs.umu.se/browserphysics">Browser Physics</a>. Leftclick=pick object or rotate scene, Rightclick=zoom, Wheelclick=shoot sphere, g=toggle shadows, h=toggle stats, space=reset scene
+</div>
+		</div>
+<body style="background-color:black;">
+  <script>
+    var s = new Three_ShapeDrawer();
+    var d = new MyDemoApplication({shapeDrawer:s});
+    $("#error").hide();
+  </script>
+</body>
+</html>
