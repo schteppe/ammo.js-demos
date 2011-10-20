@@ -119,14 +119,10 @@ DemoApplication = function(options){
   var drawstats = this.totalstats = new Float32Array(nstats);
   var t = this.t = 0;
 
-  // Start
-  th.initPhysics();
-  th.setShootBoxShape();
-
   // Init shapedrawer
   th.m_shapeDrawer.m_dynamicsWorld = m_dynamicsWorld;
   th.lastTotalTiming = new Date().getTime();
-  th.m_shapeDrawer.idleFunc = function(){
+  m_shapeDrawer.idleFunc = function(){
     th.moveAndDisplay();
     th.updateHud();
     th.updateShapeDrawer();
@@ -134,7 +130,12 @@ DemoApplication = function(options){
     th.totalstats[th.t%th.nstats] = 1000./(t1 - th.lastTotalTiming);
     th.lastTotalTiming = t1;
   }
-  th.m_shapeDrawer.update();
+  m_shapeDrawer.update();
+  this.updateCamera();
+
+  // Start
+  th.initPhysics();
+  th.setShootBoxShape();
   this.updateCamera();
 }
 
@@ -254,13 +255,11 @@ DemoApplication.prototype.updateCamera = function(){
   var rele = this.m_ele * (0.01745329251994329547);// rads per deg
   var razi = this.m_azi * (0.01745329251994329547);// rads per deg
 
-  var rot = this.tempQuaternion;
-  rot.setRotation(this.tVec(this.m_cameraUp.x(),
-			    this.m_cameraUp.y(),
-			    this.m_cameraUp.z()),
+  var rot = new Ammo.btQuaternion();
+  rot.setRotation(this.m_cameraUp,
 		  razi);
 
-  var eyePos = this.tempVector3;
+  var eyePos = new Ammo.btVector3(0,0,0);
   switch(this.m_forwardAxis){
   case 0:
     eyePos.setX(-this.m_cameraDistance);
@@ -271,14 +270,19 @@ DemoApplication.prototype.updateCamera = function(){
   case 2:
     eyePos.setZ(-this.m_cameraDistance);
     break;
+  default:
+    eyePos.setZ(-this.m_cameraDistance);
+    break;
   }
-
   var forward = new Ammo.btVector3(eyePos.x(),eyePos.y(),eyePos.z());
   forward.normalize();
-  if(forward.length2() < this.SIMD_EPSILON)
+    if(forward.length2() < this.SIMD_EPSILON)
     forward.setValue(1.0,0.0,0.0);
+
   var right = this.m_cameraUp.cross(forward);
-  var roll = new Ammo.btQuaternion(right, -rele);
+  var roll = new Ammo.btQuaternion();
+  roll.setRotation(right, -rele);
+
   roll.normalize();
 
   // Matrix-vector multiply
@@ -293,9 +297,12 @@ DemoApplication.prototype.updateCamera = function(){
 			      s2,
 			      s3);
   }
+			    
+  var rollmat = new Ammo.btMatrix3x3();
+  rollmat.setRotation(roll);
+  var rotmat = new Ammo.btMatrix3x3();
+  rotmat.setRotation(rot);
 
-  var rollmat = new Ammo.btMatrix3x3(roll);
-  var rotmat = new Ammo.btMatrix3x3(rot);
   eyePos = vmul(rotmat,vmul(rollmat,eyePos));
   //console.log("new eyePos=("+eyePos.x()+","+eyePos.y()+","+eyePos.z()+")");
   //console.log("camTargetPos=("+this.m_cameraTargetPosition.x()+","+this.m_cameraTargetPosition.y()+","+this.m_cameraTargetPosition.z()+")");
@@ -639,7 +646,7 @@ DemoApplication.prototype.MAX_SHOOTBOXES = 10;
 DemoApplication.prototype.DISABLE_DEACTIVATION = 4;
 
 // float mass, const btTransform& startTransform,btCollisionShape* shape
-DemoApplication.prototype.localCreateRigidBody = function(mass, startTransform, shape){
+DemoApplication.prototype.localCreateRigidBody = function(mass, startTransform, shape, options){
   if((!shape || shape.getShapeType() == this.INVALID_SHAPE_PROXYTYPE))
     return null;
 
@@ -657,15 +664,15 @@ DemoApplication.prototype.localCreateRigidBody = function(mass, startTransform, 
   body.setAngularVelocity(new Ammo.btVector3(0,0,0));
   body.setContactProcessingThreshold(this.m_defaultContactProcessingThreshold);
   this.m_dynamicsWorld.addRigidBody(body);
-  this.m_shapeDrawer.add(body,shape);
+  this.m_shapeDrawer.add(body,shape,options);
   this.m_bodies.push(body);
   this.m_startMotionStates.push(myMotionState);
   return body;
 };
 
-DemoApplication.prototype.addVehicle = function(v,wheelshape){
+DemoApplication.prototype.addVehicle = function(v,wheelshape,options){
   this.m_dynamicsWorld.addVehicle(v);
-  this.m_shapeDrawer.addVehicle(v,wheelshape);
+  this.m_shapeDrawer.addVehicle(v,wheelshape,options);
 };
 
 DemoApplication.prototype.DBG_NoHelpText = 1;
@@ -809,7 +816,6 @@ DemoApplication.prototype.keyboardCallbacksInternal = {
 // Example that sets the '+' button callback:
 // keyboardCallback({'+':function(event,demoapplication){...}})
 DemoApplication.prototype.keyboardCallback = function(k){
-  console.log("extendin!");
   $.extend(this.keyboardCallbacksInternal,k);
 };
 DemoApplication.prototype.keyboardUpCallback = function(k){
