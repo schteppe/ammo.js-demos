@@ -313,13 +313,28 @@ Three_ShapeDrawer.prototype.add = function(body,shape,options){
       THREE.ColorUtils.adjustHSV( planeMaterial.color, 0, 0, 0.9 );
       mesh = new THREE.Object3D();
       ground = new THREE.Mesh( geometry, planeMaterial );
-      ground.useQuaternion = true;
-      //ground.position.y=-3;
-      ground.quaternion.setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2);
       ground.scale.set( 100, 100, 100 );
+      ground.rotation.x=-Math.PI/2;
       ground.castShadow = false;
       ground.receiveShadow = true;
-      mesh.add(ground);
+
+      var submesh = new THREE.Object3D();  
+      submesh.useQuaternion = true;
+      submesh.add(ground);
+
+      var t = new Ammo.btTransform();
+      body.getMotionState().getWorldTransform(t);
+      var q = t.getRotation();
+      //var a = q.getAxis();
+      var plane = Ammo.castObject(shape,Ammo.btStaticPlaneShape);
+      var n = plane.getPlaneNormal();
+      var y = new Ammo.btVector3(0,1,0);
+      var c = plane.getPlaneConstant();
+      var a = n.cross(y);
+      submesh.quaternion.setFromAxisAngle(new THREE.Vector3(a.x(), a.y(), a.z()),
+					  Math.sqrt((n.length2()) * (y.length2())) + n.dot(y));
+      submesh.position.set(0,c,0);
+      mesh.add(submesh);
       break;
 
     case DemoApplication.prototype.CAPSULE_SHAPE_PROXYTYPE:

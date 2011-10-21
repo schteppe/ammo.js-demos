@@ -30,7 +30,7 @@ MyDemoApplication.prototype.initPhysics = function(){
   var ground = this.localCreateRigidBody(0, groundTransform, groundShape);
 
   // Create infinite ground plane
-  var aabbShape = new Ammo.btStaticPlaneShape(this.tVec(0, 1, 0), -50);
+  var aabbShape = new Ammo.btStaticPlaneShape(this.tVec(0, 1, 0), 0);
   var aabbTransform = new Ammo.btTransform();
   aabbTransform.setIdentity();
   this.localCreateRigidBody(0, aabbTransform, aabbShape);

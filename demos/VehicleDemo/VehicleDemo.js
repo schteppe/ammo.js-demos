@@ -24,7 +24,7 @@ MyDemoApplication.prototype.initPhysics = function(){
   this.m_dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
   this.m_dynamicsWorld.setGravity(this.tVec(0, -9.82, 0)); // DemoApplication.prototype.tVec(x,y,z) is a function that returns a temporary Ammo.btVector3, which is allocated by the DemoApplication. This way we don't need to use the "new" operator all the time and this improves performance. Don't use it for anything else than temporary things like this though.
 
-  if(false){
+  if(true){
     // Create ground plate in the center of the scene
     var groundShape = new Ammo.btBoxShape(this.tVec(20, 0.5, 40));
     var groundTransform = new Ammo.btTransform();

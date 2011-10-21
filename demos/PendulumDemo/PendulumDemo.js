@@ -47,16 +47,8 @@ MyDemoApplication.prototype.initPhysics = function(){
   this.m_dynamicsWorld.addConstraint(hinge1, true);
   this.m_dynamicsWorld.addConstraint(hinge2, true);
 
-    
-  // Create ground
-  var groundShape = new Ammo.btBoxShape(this.tVec(6, 0.5, 6));
-  var groundTransform = new Ammo.btTransform();
-  groundTransform.setIdentity();
-  groundTransform.setOrigin(this.tVec(0, -1.0, 0));
-  var ground = this.localCreateRigidBody(0, groundTransform, groundShape);
-
   // Create infinite ground plane
-  var aabbShape = new Ammo.btStaticPlaneShape(this.tVec(0, 1, 0), -50);
+  var aabbShape = new Ammo.btStaticPlaneShape(this.tVec(0, 1, 0), -1);
   var aabbTransform = new Ammo.btTransform();
   aabbTransform.setIdentity();
   this.localCreateRigidBody(0, aabbTransform, aabbShape);
@@ -71,6 +63,7 @@ MyDemoApplication.prototype.initPhysics = function(){
 
   // Reset scene
   this.clientResetScene();
+  this.setCameraDistance(27);
 };
 
 MyDemoApplication.prototype.clientMoveAndDisplay = function(){
