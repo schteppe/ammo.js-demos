@@ -300,10 +300,11 @@ Three_ShapeDrawer.prototype.add = function(body,shape,options){
       var radius = shape.getRadius();
       var up = shape.getConeUpIndex();
       var height = shape.getHeight();
-      //var c = makeCone(radius,height,10);
       // Add THREE cone
+      mesh = new THREE.Mesh (new THREE.CylinderGeometry( radius,radius,height ),
+			     new THREE.MeshLambertMaterial( { color: 0xaaaaaa }));
       mesh.castShadow = true;
-      mesh.receiveShadow = false;
+      mesh.receiveShadow = true;
       break;
 
     case DemoApplication.prototype.STATIC_PLANE_PROXYTYPE:
