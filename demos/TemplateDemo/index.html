@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>BoxDemo</title>
-  <meta name="description" content="Box physics simulation using ammo.js, WebGL and SceneJS." />
-  <meta name="keywords" content="ragdoll,ammo.js,ammo,bullet,bullet physics,webgl,physics,3d,3d physics,web physics,javascript" />
+  <title>ammo.js demo</title>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
   <script src="../../other/jquery/jquery.js"></script>
   <script src="../../other/jquery/jquery.mousewheel.js"></script>
   <script src="../../other/ammo/ammo.js"></script>
   <script src="../../src/ShapeDrawer.js"></script>
   <script src="../../src/SceneJS_ShapeDrawer.js"></script>
   <script src="../../src/DemoApplication.js"></script>
-  <script src="BoxDemo.js"></script>
+  <script src="TemplateDemo.js"></script>
   <script src="../../other/scenejs/scenejs.js"></script>
   <link rel="stylesheet" media="screen" href="../demo.css" />
 </head>
@@ -23,7 +22,13 @@
     <canvas id="theCanvas"></canvas>
   </div>
   <div id="info">
-    <h1>BoxDemo</h1>
+    <h1>Template</h1>
+    <p>This is a template for making a new demo. Copy all files in this folder to a new demo folder and start making your own ammo.js demo!</p>
+    <ol>
+	<li>Copy the _template folder, name it something descriptive eg. MyDemo.</li>
+	<li>Rename TemplateDemo.js to something like MyDemo.js. Remember to change the include src in index.html!</li>
+	<li>Customize MyDemo.js as you want, produce a cool demo.</li>
+    </ol>
   </div>
   <script>
     var s = new SceneJS_ShapeDrawer({canvasId:"theCanvas"});
