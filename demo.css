@@ -1,0 +1,54 @@
+* {
+    margin:0;
+}
+
+body {
+    overflow:hidden;
+}
+
+canvas {
+    /* background-color:black;*/
+}
+
+#hudCanvas {
+    position:absolute;
+    left:0;
+    top:0;
+    font-size:24px;
+}
+
+#canvasContainer, #theCanvas, #error {
+    /*height:675px;
+    width:1200px;*/
+    height:500px;
+    width:888px;
+    position:absolute;
+    top:0;
+    left:0;
+}
+
+#error {
+    position:absolute;
+    top:0;
+    left:0;
+}
+
+#info {
+    position:absolute;
+    top:0px;
+    left:888px;
+    padding:10px;
+    width:300px;
+}
+
+#threeinfo a {
+    color:white;
+}
+#threeinfo {
+    font-family:Georgia;
+    color:#eee;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:1000;
+}
