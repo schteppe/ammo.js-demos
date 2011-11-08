@@ -16,7 +16,7 @@ function Three_ShapeDrawer(options){
 
   if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-  var SHADOW_MAP_WIDTH = 2*2048, SHADOW_MAP_HEIGHT = 2*1024;
+  var SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 1024;
   var MARGIN = 0;
   var SCREEN_WIDTH = this.SCREEN_WIDTH = window.innerWidth;
   var SCREEN_HEIGHT = this.SCREEN_HEIGHT = window.innerHeight - 2 * MARGIN;

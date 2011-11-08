@@ -1,78 +1,224 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset='utf-8'>
+<meta charset='utf-8'>
+<title>schteppe/ammo.js-demos @ GitHub</title>
+<style type="text/css">
+* {
+  margin:0;
+}
+body {
+  margin: 40px 0px;
+}
 
-  <title>schteppe/ammo.js-demos @ GitHub</title>
+h1,h2, p {
+    margin:10px;
+}
 
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #ddd680;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #000000;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #22297f; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #22297f; }
-    h3 { text-align: center; color: #22297f; }
-    a { color: #22297f; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
+img.thumb {
+    max-height:100px;
+    float:right;
+    margin:10px;
+}
+
+h1 {
+    font-size:28px;
+    font-family:Vera, Helvetica,Georgia;
+    padding:0;
+    margin-top:7px;
+    font-size:36px;
+    color:#FFF;
+    text-decoration:none;
+    /*text-transform:uppercase;*/
+    line-height:1.2em;
+}
+
+h1 a {
+    text-decoration:none;
+}
+
+a {
+    color:white;
+}
+
+body {
+    background-color:#2C2C29;
+    font-family:Helvetica;
+    font-size:12px;
+    color:white;
+    line-height:1.6em;
+}
+
+canvas {
+    /* background-color:black;*/
+}
+
+#hudCanvas {
+    position:absolute;
+    left:0;
+    top:0;
+    font-size:24px;
+}
+
+#canvasContainer, #theCanvas, #error {
+    /*height:675px;
+    width:1200px;*/
+    height:500px;
+    width:888px;
+    position:absolute;
+    top:0;
+    left:0;
+}
+
+#error {
+    position:absolute;
+    top:0;
+    left:0;
+}
+
+#info {
+    position:absolute;
+    top:0px;
+    left:888px;
+    padding:10px;
+    width:300px;
+}
+
+.button {
+    text-align: center;
+    display: block;
+    margin: 10px auto;
+    text-decoration: none;
+    padding: 10px 50px;
+    border: 1px;
+    background: black;
+    font: bold 18px Helvetica,Georgia,serif;
+    color: white;
+    clear: both;
+    border-radius: 5px;
+    width:290px;
+}
+
+.demo, #index_info {
+    text-align:left;
+    width:700px;
+    margin:auto;
+}
+
+.demo {
+    padding:10px;
+    box-shadow:0px 0px 10px #000;
+    background-color:#3F3F3F;
+    height:100px;
+    margin-top:20px;
+}
+.demo:hover {
+    background-color:#4F4F4F;
+}
+
+.demo img {
+    margin:0px;
+    margin-left:10px;
+}
+
+.demo a {
+    text-decoration:none;
+}
+
+.fb-like {
+    width:350px;
+    margin:10px;background-color:silver;padding:10px;border-radius:10px;box-shadow:4px 4px 4px #000
+}
+
+#threeinfo a {
+    color:white;
+}
+#threeinfo {
+    font-family:Georgia;
+    color:#eee;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:1000;
+}
+</style>
 </head>
 
 <body>
   <a href="https://github.com/schteppe/ammo.js-demos"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
-  <div id="container">
-
-    <div class="download">
-      <a href="https://github.com/schteppe/ammo.js-demos/zipball/master">
-        <img border="0" width="90" src="https://github.com/images/modules/download/zip.png"></a>
-      <a href="https://github.com/schteppe/ammo.js-demos/tarball/master">
-        <img border="0" width="90" src="https://github.com/images/modules/download/tar.png"></a>
-    </div>
+  <div id="index_info">
 
     <h1><a href="https://github.com/schteppe/ammo.js-demos">ammo.js-demos</a>
       <span class="small">by <a href="https://github.com/schteppe">schteppe</a></span></h1>
 
-    <div class="description">
+    <p>
       Demo application base class and 3D physics demos based on ammo.js. Support for several scenegraphs including Three.js and SceneJS.
-    </div>
+    </p>
 
       <h2>Authors</h2>
-      <p>Stefan Hedman (schteppe@gmail.com)<br/>      </p>
+      <p>Stefan Hedman (schteppe@gmail.com)<br/>      </p>
     
-
-    
-      <h2>Contact</h2>
-      <p>Stefan Hedman (schteppe@gmail.com)<br/>      </p>
-    
-
     <h2>Download</h2>
     <p>
-      You can download this project in either
-      <a href="https://github.com/schteppe/ammo.js-demos/zipball/master">zip</a> or
-      <a href="https://github.com/schteppe/ammo.js-demos/tarball/master">tar formats.
+      Get the source code on GitHub : <a href="https://github.com/schteppe/ammo.js-demos">schteppe/ammo.js-demos</a>
     </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/schteppe/ammo.js-demos</pre>
-    </p>
+  </div>
 
-    <div class="footer">
-      get the source code on GitHub : <a href="https://github.com/schteppe/ammo.js-demos">schteppe/ammo.js-demos</a>
-    </div>
 
+  <div class="demo">
+    <a href="demos/ChessDemo/index.html">
+      <img src="demos/ChessDemo/thumb.png" class="thumb">
+      <h2>ChessDemo</h2>
+      <p>A chessboard with physics.</p>
+    </a>
+  </div>
+
+  <div class="demo">
+    <a href="demos/CarsDemo/index.html">
+      <img src="demos/CarsDemo/thumb.jpg" class="thumb">
+      <h2>CarsDemo</h2>
+      <p>A car and two piles of.. letters?</p>
+    </a>
+  </div>
+
+  <div class="demo">
+    <a href="demos/PendulumDemo/index.html">
+      <img src="demos/PendulumDemo/thumb.png" class="thumb">
+      <h2>PendulumDemo</h2>
+      <p>A double pendulum.</p>
+    </a>
+  </div>
+
+  <div class="demo">
+    <a href="demos/RagdollDemo/index.html">
+      <img src="demos/RagdollDemo/thumb.png" class="thumb">
+      <h2>RagdollDemo</h2>
+      <p>This is Bob. Bob likes to play. Just make sure he doesn't get hurt...</p>
+    </a>
+  </div>
+
+  <div class="demo">
+    <a href="demos/RagdollDemo/three.html">
+      <img src="demos/RagdollDemo/thumb.png" class="thumb">
+      <h2>RagdollDemo in Three.js</h2>
+      <p>Same Ragdoll demo, but rendered using Three.js</p>
+    </a>
+  </div>
+
+  <div class="demo">
+    <a href="demos/VehicleDemo/index.html">
+      <img src="demos/VehicleDemo/thumb.png" class="thumb">
+      <h2>VehicleDemo</h2>
+      <p>Use the arrow keys to control a little car.</p>
+    </a>
+  </div>
+  <div class="demo">
+    <a href="demos/BoxDemo/index.html">
+      <img src="demos/BoxDemo/thumb.png" class="thumb">
+      <h2>BoxDemo</h2>
+      <p>25 boxes are stacked on each other to form a wall. Tear the wall down using the mouse or shoot spheres at it to see it fall.</p>
+    </a>
   </div>
 
 </body>
