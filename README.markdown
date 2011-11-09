@@ -6,6 +6,8 @@
 <a href="http://schteppe.github.com/ammo.js-demos/demos/RagdollDemo/index.html"  target="_blank"><img src="http://schteppe.github.com/ammo.js-demos/demos/RagdollDemo/thumb.png"  width="100" height="100"></a>
 <a href="http://schteppe.github.com/ammo.js-demos/demos/PendulumDemo/index.html" target="_blank"><img src="http://schteppe.github.com/ammo.js-demos/demos/PendulumDemo/thumb.png" width="100" height="100"></a>
 
+<a href="http://schteppe.github.com/ammo.js-demos/">View all demos >></a>
+
 This project aims to produce easy-to-use demo classes, that can be used to view physics simulations in ammo.js in any WebGL scenegraph.
 
 There are two main classes in the framework. The first one is the _DemoApplication_ that is supposed to be extended by the user. The DemoApplication base class contains functions for mouse picking and creating rigid bodies.
