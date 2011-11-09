@@ -24,6 +24,7 @@
 </div>
 <body style="background-color:black;">
   <script>
+    if(window.location.hash) $("#threeinfo").hide();
     var s = new Three_ShapeDrawer();
     var d = new MyDemoApplication({shapeDrawer:s});
     $("#error").hide();
