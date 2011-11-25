@@ -209,7 +209,10 @@ MyDemoApplication.prototype.initPhysics = function(){
 		 1.05,
 		 1.05];
 
-  var pos2d =  [[0*s,s],
+  var pos2d =  [
+		// White
+		// Pawns
+		[0*s,s],
 		[1*s,s],
 		[2*s,s],
 		[3*s,s],
@@ -230,28 +233,28 @@ MyDemoApplication.prototype.initPhysics = function(){
 		[1*s,0*s],
 		[6*s,0*s],
 
-
 		// Black
-		[0*s,7*s],
-		[1*s,7*s],
-		[2*s,7*s],
-		[3*s,7*s],
-		[4*s,7*s],
-		[5*s,7*s],
-		[6*s,7*s],
-		[7*s,7*s],
-
+		// Pawns
 		[0*s,6*s],
-		[7*s,6*s],
-
+		[1*s,6*s],
 		[2*s,6*s],
-		[5*s,6*s],
-
 		[3*s,6*s],
 		[4*s,6*s],
+		[5*s,6*s],
+		[6*s,6*s],
+		[7*s,6*s],
 
-		[1*s,6*s],
-		[6*s,6*s]];
+		[0*s,7*s],
+		[7*s,7*s],
+
+		[2*s,7*s],
+		[5*s,7*s],
+
+		[3*s,7*s],
+		[4*s,7*s],
+
+		[1*s,7*s],
+		[6*s,7*s]];
 
   // "root" container
   var r = "../../other/three/textures/cube/chess/";
