@@ -1,2 +1,7 @@
 # Emacs temp
 *~
+
+# Documentation
+doc/html
+doc/latex
+doc/temp

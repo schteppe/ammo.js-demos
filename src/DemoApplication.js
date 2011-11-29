@@ -1,17 +1,41 @@
-DemoApplication = function(options){
+/**
+ * @file DemoApplication.js
+ * @brief Main demo application.
+ */
+
+/**
+ * @class DemoApplication
+ * @brief The main demo class. Extend it to make your own.
+ */
+
+/**
+ * Constructor of the demoapp object
+ * @tparam array options
+ * @ctor
+ */
+function DemoApplication(options){
   
   if(!(Ammo && ShapeDrawer && Float32Array))
     throw "Needs Ammo and ShapeDrawer!";
 
-  var settings = this.settings = {
+  var settings = {
     shapeDrawer:new ShapeDrawer()
   };
+  /**
+   * App settings
+   * @private
+   */
+  this.settings = settings;
   $.extend(settings,options);
   
   var th = this;
 
   // DemoApplication things
-  var use6Dof = this.use6Dof = false;
+  /**
+   * Use or not use 6 degrees of freedom?
+   * @todo Used?
+   */
+  this.use6Dof = false;
   var m_dynamicsWorld =        th.m_dynamicsWorld = null;
   var m_pickConstraint =       th.m_pickConstraint = null;
   var m_cameraDistance =       th.m_cameraDistance = 15.0;
@@ -23,9 +47,19 @@ DemoApplication = function(options){
   var m_cameraTargetPosition = th.m_cameraTargetPosition = new Ammo.btVector3(0,0,0);
   var mouseButton = th.mouseButton = 0;
 
-  // Reusable vars - using "new" is expensive and ammo.js is said to be leaking memory when doing it
+  /**
+   * Reusable transform - to save memory leak and increase performance
+   */
   this.tempTransform = new Ammo.btTransform();
+
+  /**
+   * Reusable quaternion - to save memory leak and increase performance
+   */
   this.tempQuaternion = new Ammo.btQuaternion(0, 0, 0, 0);
+
+  /**
+   * Reusable vector - to save memory leak and increase performance
+   */
   this.tempVector3 = new Ammo.btVector3(0,0,0);
 
   // Interaction
@@ -48,8 +82,16 @@ DemoApplication = function(options){
   var m_ortho = th.m_ortho = 0;
 
   var m_ShootBoxInitialSpeed = th.m_ShootBoxInitialSpeed = 30;
-  var shootboxcounter = this.shootboxcounter = 0;
-  var shootboxbodies = this.shootboxbodies = [];	
+  /**
+   * Local box body counter
+   * @private
+   */ 
+  this.shootboxcounter = 0;
+  /**
+   * Local storage of box bodies
+   * @private
+   */
+  this.shootboxbodies = [];
 
   var m_dt = th.m_dt = 1/60;
   var m_stepping = th.m_stepping = true;
@@ -57,7 +99,15 @@ DemoApplication = function(options){
   var m_idle = th.m_idle = false;
   var m_lastKey = th.m_lastKey = 0;
 
+  /**
+   * Storage array for bodies
+   * @private
+   */
   this.m_bodies = [];
+  /**
+   * Storage array for motion states
+   * @private
+   */
   this.m_startMotionStates = [];
 
   var m_shapeDrawer = th.m_shapeDrawer = settings.shapeDrawer;
@@ -108,16 +158,49 @@ DemoApplication = function(options){
       */
     });
 
-  // get canvas info
+  /**
+   * Canvas screen width
+   * @private
+   */
   this.m_glScreenWidth = m_shapeDrawer.getScreenWidth();
+
+  /**
+   * Canvas screen height
+   * @private
+   */
   this.m_glScreenHeight = m_shapeDrawer.getScreenHeight();
 
   // Init stats
-  var nstats = this.nstats = 20;
-  var stepstats = this.stepstats = new Float32Array(nstats);
-  var drawstats = this.drawstats = new Float32Array(nstats);
-  var drawstats = this.totalstats = new Float32Array(nstats);
-  var t = this.t = 0;
+  var nstats = 20;
+  /**
+   * Physics step statistics storage
+   * @private
+   */
+  this.stepstats = new Float32Array(nstats);
+  var drawstats = new Float32Array(nstats);
+  /**
+   * Number of stats to sample before averaging
+   * @private
+   */
+  this.nstats = nstats;
+
+  /** 
+   * Storage array for drawing time (milliseconds)
+   * @private
+   */
+  this.drawstats = drawstats;
+  var totalstats = new Float32Array(nstats);
+
+  /** 
+   * Storage array for drawing time (milliseconds)
+   * @private
+   */
+  this.totalstats = totalstats;
+  var t = 0;
+  /**
+   * Local timestep number (goes from 0 and ticking in integer steps)
+   */
+  this.t = t;
 
   // Init shapedrawer
   th.m_shapeDrawer.m_dynamicsWorld = m_dynamicsWorld;
@@ -134,23 +217,34 @@ DemoApplication = function(options){
   this.updateCamera();
 
   // Start
+  this.setShootBoxShape();
+  this.updateCamera();
   th.initPhysics();
-  th.setShootBoxShape();
   this.updateCamera();
 }
 
+/**
+ * Makes the shapedrawer read the Ammo physics state and updates rendered objects.
+ */
 DemoApplication.prototype.updateShapeDrawer = function(){
   var t0 = new Date().getTime();
   this.m_shapeDrawer.update();
   var t1 = new Date().getTime();
   this.drawstats[this.t%this.nstats] = t1-t0;
-
 }
 
+/**
+ * Get the btDynamicsWorld object from the demo app
+ * @treturn btDynamicsWorld
+ */
 DemoApplication.prototype.getDynamicsWorld = function(){
   return this.m_dynamicsWorld;
 };
 
+/**
+ * Updates the heads up display with fresh statistics
+ * @private
+ */
 DemoApplication.prototype.updateHud = function(){
   if(this.m_debugMode & this.DBG_NoHelpText){
     if(this.t%this.nstats==0){
@@ -166,6 +260,11 @@ DemoApplication.prototype.updateHud = function(){
   }
 };
 
+/**
+ * Calculate the average of the numbers in a vector
+ * @tparam array v The input array of numbers.
+ * @treturn float The average
+ */
 function avg(v){
   s = 0.0;
   for(var i=0; i<v.length; i++)
@@ -173,15 +272,34 @@ function avg(v){
   return s/v.length;
 }
 
-// Override me!
-DemoApplication.prototype.initPhysics = function(){};
+/**
+ * To be overridden by your demo app
+ * @brief To be overridden by your demo app
+ */
+DemoApplication.prototype.initPhysics = function(){
+  // OVERRIDE ME
+};
 
-DemoApplication.prototype.BT_LARGE_FLOAT = 1000000.0;
-
+/**
+ * Draw or not draw clusters?
+ * @tparam bool drawClusters
+ * @todo Implement me!
+ */
 DemoApplication.prototype.setDrawClusters = function(drawClusters){
   // Todo
 };
 
+/**
+ * A large float
+ * @brief Use for "large" numbers
+ * @treturn float
+ */
+DemoApplication.prototype.BT_LARGE_FLOAT = 1000000.0;
+
+/**
+ * Override the current ShapeDrawer
+ * @tparam ShapeDrawer shapeDrawer
+ */
 DemoApplication.prototype.overrideWebGLShapeDrawer = function(shapeDrawer){
   var bodies;
   if(this.shapeDrawer)
@@ -189,19 +307,35 @@ DemoApplication.prototype.overrideWebGLShapeDrawer = function(shapeDrawer){
   this.shapeDrawer = shapeDrawer;
   this.shapeDrawer.update();
 };
-	
+
+/**
+ * Set orthographic projection
+ * @todo Implement me!
+ */
 DemoApplication.prototype.setOrthographicProjection = function(){
   // TODO
 };
 
+/**
+ * Resets the perspective projection matrix
+ * @todo implement me
+ */
 DemoApplication.prototype.resetPerspectiveProjection = function(){
   // TODO
 };
-	
+
+/**
+ * Toggle texturing
+ * @tparam bool enable
+ */
 DemoApplication.prototype.setTexturing = function(enable){
   return this.m_shapeDrawer.enableTexture(enable);
 };
 
+/**
+ * Toggle shadows
+ * @tparam bool enable
+ */
 DemoApplication.prototype.setShadows = function(enable){
   var p = m_enableshadows;
   this.m_enableshadows = enable;
@@ -209,47 +343,86 @@ DemoApplication.prototype.setShadows = function(enable){
   return (p);
 };
 
+/**
+ * Is texturing enabled?
+ * @treturn bool
+ */
 DemoApplication.prototype.getTexturing = function(){
   return this.m_shapeDrawer.hasTextureEnabled();
 };
 
+/**
+ * Are shadows enabled?
+ * @treturn bool
+ */
 DemoApplication.prototype.getShadows = function(){
   return this.m_enableshadows;
 };
 
+/**
+ * Get the current debug mode
+ * @treturn int
+ */
 DemoApplication.prototype.getDebugMode = function(){
   return this.m_debugMode;
 };
-	
+
+/**
+ * Set debug mode.
+ * @tparam int mode
+ */
 DemoApplication.prototype.setDebugMode = function(mode){
-  // TODO
+  this.m_debugMode = mode;
 };
-	
+
+/**
+ * Set azimuth camera position in degrees
+ * @tparam float azi
+ */
 DemoApplication.prototype.setAzi = function(azi){
   this.m_azi = azi;
 };
-	
+
+/**
+ * Set elevation camera position in degrees
+ * @tparam float ele
+ */	
 DemoApplication.prototype.setEle = function(ele){
   this.m_ele = ele;
 };
 
+/**
+ * Set camera up direction
+ * @tparam btVector3 camUp
+ */
 DemoApplication.prototype.setCameraUp = function(camUp){
   this.m_cameraUp = camUp;
 };
 
+/**
+ * Set camera forward axis
+ * @tparam btVector3 axis
+ */
 DemoApplication.prototype.setCameraForwardAxis = function(axis){
   this.m_forwardAxis = axis;
 };
 
-DemoApplication.prototype.myinit = function(){
-  // Todo
-  // Settings for light etc
-};
-
+/**
+ * Toggle idle mode. Will pause/unpause physics.
+ */
 DemoApplication.prototype.toggleIdle = function(){
   this.m_idle = !this.m_idle;
 };
+
+/**
+ * A small number...
+ * @treturn float
+ */
 DemoApplication.prototype.SIMD_EPSILON = 0.01;	
+
+/**
+ * Update the camera position. Should be done after changing camera orientation parameters.
+ */
 DemoApplication.prototype.updateCamera = function(){
 
   var rele = this.m_ele * (0.01745329251994329547);// rads per deg
@@ -320,14 +493,26 @@ DemoApplication.prototype.updateCamera = function(){
 				   -this.m_sundirection.z()));
 };
 
+/**
+ * Get the current camera position.
+ * @treturn btVector3
+ */
 DemoApplication.prototype.getCameraPosition = function(){
   return this.m_cameraPosition;
 };
 
+/**
+ * Get the current camera target position.
+ * @treturn btVector3
+ */
 DemoApplication.prototype.getCameraTargetPosition = function(){
   return this.m_cameraTargetPosition;
 };
 
+/**
+ * Get the time since last physics step in microseconds.
+ * @treturn int
+ */
 DemoApplication.prototype.getDeltaTimeMicroseconds = function(){
   var t = new Date();
   var dt = 0.0;
@@ -337,21 +522,37 @@ DemoApplication.prototype.getDeltaTimeMicroseconds = function(){
   return dt;
 };
 
+/**
+ * Set the view frustum
+ * @tparam float zNear
+ * @tparam float zFar
+ * @todo complete
+ */
 DemoApplication.prototype.setFrustumZPlanes = function(zNear, zFar){
   this.m_frustumZNear = zNear;
   this.m_frustumZFar = zFar;
 };
-	
-DemoApplication.USE_BT_CLOCK = true;
 
+/**
+ * Get the camera distance
+ * @treturn float
+ */
 DemoApplication.prototype.getCameraDistance = function(){
   return this.m_cameraDistance;
 };
 
+/**
+ * Set the camera distance
+ * @tparam float dist
+ */
 DemoApplication.prototype.setCameraDistance = function(dist){
   this.m_cameraDistance = dist;
 };
 
+/**
+ * Used internally by DemoApplication
+ * @todo make private?
+ */
 DemoApplication.prototype.moveAndDisplay = function(){
   var t0 = new Date().getTime();
   if (!this.m_idle){
@@ -363,10 +564,17 @@ DemoApplication.prototype.moveAndDisplay = function(){
   this.t++;
 };
 
+/**
+ * To be overridden
+ */
 DemoApplication.prototype.clientMoveAndDisplay = function(){
   // Override me!
 };
 
+/**
+ * Resets the scene
+ * @brief Resets the scene
+ */
 DemoApplication.prototype.clientResetScene = function(){
   var gNumClampedCcdMotions = 0;
   var numObjects = 0;
@@ -420,6 +628,10 @@ DemoApplication.prototype.clientResetScene = function(){
   }
 };
 
+/**
+ * Set the shooting shape type
+ * @tparam string shapeType Either 'box', 'sphere', 'cylinder' or 'cone'
+ */
 DemoApplication.prototype.setShootBoxShape = function(shapeType){
   switch(shapeType){
   case 'box':      this.m_shootBoxShape = new Ammo.btBoxShape(this.tVec(.5,.5,.5)); break;
@@ -428,21 +640,40 @@ DemoApplication.prototype.setShootBoxShape = function(shapeType){
   case 'cone':     this.m_shootBoxShape = new Ammo.btConeShape(.5,1); break;
   default: this.setShootBoxShape('sphere'); break;
   }
+  console.log("shootboxshape set");
 };
 
-// To save some memory leaking
+/**
+ * Sets the local temp vector in the DemoApplication objects to specified coordinates and returns it. Therefore, this function should only be used once at a time (collisions may occur).
+ * @tparam float x
+ * @tparam float y
+ * @tparam float z
+ * @treturn btVector3
+ */
 DemoApplication.prototype.tVec = function(x,y,z){
   this.tempVector3.setValue(x,y,z);
   return this.tempVector3;
-}
+};
 
-// To save some memory leaking
-  DemoApplication.prototype.tQuat = function(x,y,z,w){
-    this.tempQuaternion.setValue(x,y,z,w);
+/**
+ * To save some memory leaking. 
+ * @see tVec()
+ * @tparam float x
+ * @tparam float y
+ * @tparam float z
+ * @tparam float w
+ * @treturn btVector3
+ */
+DemoApplication.prototype.tQuat = function(x,y,z,w){
+  this.tempQuaternion.setValue(x,y,z,w);
   return this.tempQuaternion;
-}
-
-// Vec3 destination
+};
+    
+/**
+ * Shoot a box
+ * @todo make private to DemoApplication?
+ * @tparam btVector3 destination
+ */
 DemoApplication.prototype.shootBox = function(destination){
   if(this.m_dynamicsWorld){
     var mass = 1.0;
@@ -478,11 +709,21 @@ DemoApplication.prototype.shootBox = function(destination){
   }
 };
 
+/**
+ * Debug print a vector
+ * @tparam btVector3 v
+ * @tparam string name
+ */
 function printv(v,name){
   console.log((name?name+": ":"")+v.x()+","+v.y()+","+v.z());
 }
 
-// int x, int y
+/**
+ * Get vector ray into 3D space when clicking the 2D coordinate (x,y)
+ * @tparam int x
+ * @tparam int y
+ * @treturn btVector3
+ */
 DemoApplication.prototype.getRayTo = function(x, y){
   if(this.m_ortho){
     var aspect; // Scalar
@@ -581,7 +822,11 @@ DemoApplication.prototype.getRayTo = function(x, y){
   return rayTo;
 };
 
-// KEYS
+/**
+ * JavaScript key codes packed neatly into an array
+ * Contains codes: BACKSPACE, TAB, ENTER, SHIFT, CTRL, ALT, PAUSE, CAPS, ESCAPE, PAGEUP, PAGEDOWN, END, HOME, LEFT, UP, RIGHT, DOWN, INSERT, DELETE
+ * @treturn object
+ */
 DemoApplication.prototype.keys = {BACKSPACE: 8,
 				  TAB: 9,
 				  ENTER: 13,
@@ -602,50 +847,107 @@ DemoApplication.prototype.keys = {BACKSPACE: 8,
 				  INSERT: 45,
 				  DELETE: 46};
 
+/**
+ * Mouse picking clamping
+ * @treturn float
+ */
 DemoApplication.prototype.mousePickClamping = 30.0;
 
+/** btBoxShape */
 DemoApplication.prototype.BOX_SHAPE_PROXYTYPE = 0;
+/** btTriangleShape */
 DemoApplication.prototype.TRIANGLE_SHAPE_PROXYTYPE = 1;
+/** what? */
 DemoApplication.prototype.TETRAHEDRAL_SHAPE_PROXYTYPE = 2;
+/** btConvexTriangleMeshShape */
 DemoApplication.prototype.CONVEX_TRIANGLEMESH_SHAPE_PROXYTYPE = 3;
+/** btConvexHullShape */
 DemoApplication.prototype.CONVEX_HULL_SHAPE_PROXYTYPE = 4;
+/** btConvexPointCloudShape */
 DemoApplication.prototype.CONVEX_POINT_CLOUD_SHAPE_PROXYTYPE = 5;
+/** what? */
 DemoApplication.prototype.CUSTOM_POLYHEDRAL_SHAPE_TYPE = 6;
+/** what? */
 DemoApplication.prototype.IMPLICIT_CONVEX_SHAPES_START_HERE = 7;
+/** btSphereShape */
 DemoApplication.prototype.SPHERE_SHAPE_PROXYTYPE = 8;
+/** btMultiSphereShape */
 DemoApplication.prototype.MULTI_SPHERE_SHAPE_PROXYTYPE = 9;
+/** btCapsuleShape */
 DemoApplication.prototype.CAPSULE_SHAPE_PROXYTYPE = 10;
+/** btConeShape */
 DemoApplication.prototype.CONE_SHAPE_PROXYTYPE = 11;
+/** btConvexShape */
 DemoApplication.prototype.CONVEX_SHAPE_PROXYTYPE = 12;
+/** btCylinderShape */
 DemoApplication.prototype.CYLINDER_SHAPE_PROXYTYPE = 13;
+/** btUniformScalingShape */
 DemoApplication.prototype.UNIFORM_SCALING_SHAPE_PROXYTYPE = 14;
+/** btMinkowskiSumShape */
 DemoApplication.prototype.MINKOWSKI_SUM_SHAPE_PROXYTYPE = 15;
+/** what? */
 DemoApplication.prototype.MINKOWSKI_DIFFERENCE_SHAPE_PROXYTYPE = 16;
+/** btBox2dShape */
 DemoApplication.prototype.BOX_2D_SHAPE_PROXYTYPE = 17;
+/** btConvex2dShape */
 DemoApplication.prototype.CONVEX_2D_SHAPE_PROXYTYPE = 18;
+/** what? */
 DemoApplication.prototype.CUSTOM_CONVEX_SHAPE_TYPE = 19;
+/** what? */
 DemoApplication.prototype.CONCAVE_SHAPES_START_HERE = 20;
+/** btTriangleMeshShape */
 DemoApplication.prototype.TRIANGLE_MESH_SHAPE_PROXYTYPE = 21;
+/** btScaledBvhTriangleMeshShape */
 DemoApplication.prototype.SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE = 22;
+/** what? */
 DemoApplication.prototype.FAST_CONCAVE_MESH_PROXYTYPE = 23;
+/** btHeightfieldTerrainShape? */
 DemoApplication.prototype.TERRAIN_SHAPE_PROXYTYPE = 24;
+/** what? */
 DemoApplication.prototype.GIMPACT_SHAPE_PROXYTYPE = 25;
+/** what? */
 DemoApplication.prototype.MULTIMATERIAL_TRIANGLE_MESH_PROXYTYPE = 26;
+/** btEmptyShape */
 DemoApplication.prototype.EMPTY_SHAPE_PROXYTYPE = 27;
+/** what? */
 DemoApplication.prototype.STATIC_PLANE_PROXYTYPE = 28;
+/** what? */
 DemoApplication.prototype.CUSTOM_CONCAVE_SHAPE_TYPE = 29;
+/** what? */
 DemoApplication.prototype.CONCAVE_SHAPES_END_HERE = 30;
+/** btCompoundShape */
 DemoApplication.prototype.COMPOUND_SHAPE_PROXYTYPE = 31;
+/** btSoftBodyCollisionShape */
 DemoApplication.prototype.SOFTBODY_SHAPE_PROXYTYPE = 32;
+/** what? */
 DemoApplication.prototype.HFFLUID_SHAPE_PROXYTYPE = 33;
+/** what? */
 DemoApplication.prototype.HFFLUID_BUOYANT_CONVEX_SHAPE_PROXYTYPE = 34;
+/** what? */
 DemoApplication.prototype.INVALID_SHAPE_PROXYTYPE = 35;
+/** what? */
 DemoApplication.prototype.MAX_BROADPHASE_COLLISION_TYPES = 36;
 
+/**
+ * Maximum shoot shapes that will be spawned. If the number of shapes exceeds this number, the oldest shape will be deleted.
+ * @treturn int
+ */
 DemoApplication.prototype.MAX_SHOOTBOXES = 10;
+
+/**
+ * Motionstate flag
+ * @treturn int
+ */
 DemoApplication.prototype.DISABLE_DEACTIVATION = 4;
 
-// float mass, const btTransform& startTransform,btCollisionShape* shape
+/**
+ * Spawns a rigid body into the demo scene
+ * @tparam float mass
+ * @tparam btTransform startTransform
+ * @tparam btCollisionShape shape
+ * @tparam Object options
+ * @treturn btRigidBody
+ */
 DemoApplication.prototype.localCreateRigidBody = function(mass, startTransform, shape, options){
   if((!shape || shape.getShapeType() == this.INVALID_SHAPE_PROXYTYPE))
     return null;
@@ -670,162 +972,62 @@ DemoApplication.prototype.localCreateRigidBody = function(mass, startTransform, 
   return body;
 };
 
+/**
+ * Add a vehicle to the simulation.
+ * @tparam btRaycastVehicle v
+ * @tparam btCollisionShape wheelshape
+ * @tparam Object options Options to provide to ShapeDrawer.addVehicle
+ */
 DemoApplication.prototype.addVehicle = function(v,wheelshape,options){
   this.m_dynamicsWorld.addVehicle(v);
   this.m_shapeDrawer.addVehicle(v,wheelshape,options);
 };
 
+/**
+ * Debug render mode flag
+ * @treturn int
+ */
 DemoApplication.prototype.DBG_NoHelpText = 1;
 
-DemoApplication.prototype.keyboardUpCallbacksInternal = {};
-
-DemoApplication.prototype.keyboardCallbacksInternal = {
-  q: function(e,da){ console.log("Quit? You can't quit!"); },
-  l: function(e,da){ da.stepLeft(); },
-  r: function(e,da){ da.stepRight(); },
-  f: function(e,da){ da.stepFront(); },
-  b: function(e,da){ da.stepBack(); },
-  z: function(e,da){ da.zoomIn(); },
-  x: function(e,da){ da.zoomOut(); },
-  i: function(e,da){ da.toggleIdle(); },
-  g: function(e,da){ da.m_enableshadows=!da.m_enableshadows; da.m_shapeDrawer.enableShadows(da.m_enableshadows); },
-  u: function(e,da){ da.m_shapeDrawer.enableTexture(!da.m_shapeDrawer.enableTexture(false)); },
-  h: function(e,da){
-    // Toggle profiling HUD
-    //da.m_shapeDrawer.hud("Hello!");
-    if(da.m_debugMode & da.DBG_NoHelpText)
-      da.m_debugMode = da.m_debugMode & (~da.DBG_NoHelpText);
-    else
-      da.m_debugMode |= da.DBG_NoHelpText;
-  },
-  ' ': function(e,da){
-    da.clientResetScene();
-  },
-
-
-  /*
-  w: function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_DrawWireframe)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_DrawWireframe);
-    else
-      m_debugMode |= btIDebugDraw::DBG_DrawWireframe;
-  },
-
-  p: function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_ProfileTimings)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_ProfileTimings);
-    else
-      m_debugMode |= btIDebugDraw::DBG_ProfileTimings;
-  },
-
-  '=':function(e,da){
-    // Screenshot?
-  },
-
-  m : function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_EnableSatComparison)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_EnableSatComparison);
-    else
-      m_debugMode |= btIDebugDraw::DBG_EnableSatComparison;
-      
-  },
-  n : function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_DisableBulletLCP)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_DisableBulletLCP);
-    else
-      m_debugMode |= btIDebugDraw::DBG_DisableBulletLCP;
-  },
-
-  t :  function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_DrawText)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_DrawText);
-    else
-      m_debugMode |= btIDebugDraw::DBG_DrawText;
-  },
-  y:		 function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_DrawFeaturesText)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_DrawFeaturesText);
-    else
-      m_debugMode |= btIDebugDraw::DBG_DrawFeaturesText;
-  },
-  a:	 function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_DrawAabb)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_DrawAabb);
-    else
-      m_debugMode |= btIDebugDraw::DBG_DrawAabb;
-  },
-  c :  function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_DrawContactPoints)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_DrawContactPoints);
-    else
-      m_debugMode |= btIDebugDraw::DBG_DrawContactPoints;
-  },
-  C :  function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_DrawConstraints)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_DrawConstraints);
-    else
-      m_debugMode |= btIDebugDraw::DBG_DrawConstraints;
-  },
-  L :  function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_DrawConstraintLimits)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_DrawConstraintLimits);
-    else
-      m_debugMode |= btIDebugDraw::DBG_DrawConstraintLimits;
-  },
-
-  d :  function(e,da){
-    if (m_debugMode & btIDebugDraw::DBG_NoDeactivation)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_NoDeactivation);
-    else
-      m_debugMode |= btIDebugDraw::DBG_NoDeactivation;
-    if (m_debugMode & btIDebugDraw::DBG_NoDeactivation)
-      {
-	gDisableDeactivation = true;
-      } else
-      {
-	gDisableDeactivation = false;
-      }
-  },
-  o : function(e,da){
-    m_ortho = !m_ortho;//m_stepping = !m_stepping;
-  },
-  s :  function(e,da){clientMoveAndDisplay(); },
-  '1' : function(e,da){
-      if (m_debugMode & btIDebugDraw::DBG_EnableCCD)
-      m_debugMode = m_debugMode & (~btIDebugDraw::DBG_EnableCCD);
-      else
-      m_debugMode |= btIDebugDraw::DBG_EnableCCD;
-  },
-
-  '.': function(e,da){
-    this.shootBox(this.m_cameraTargetPosition); //this.getRayTo(x,y);
-  },
-
-  '+': function(e,da){
-    this.m_ShootBoxInitialSpeed += 10.0;
-  },
-  '-': function(e,da){
-    this.m_ShootBoxInitialSpeed -= 10.0;
-  },
-  */ 
-  
+/**
+ * Keyup callbacks
+ * @private
+ * @treturn Object
+ */
+DemoApplication.prototype.keyboardUpCallbacksInternal = {
+  // Nothing here from the beginning
 };
 
-// Extends the keyboard callbacks
-// k is an object on the JSON format with buttons as keys and callbacks as values
-// Example that sets the '+' button callback:
-// keyboardCallback({'+':function(event,demoapplication){...}})
+/**
+ * Extends the keyboard callbacks. k is an object on the JSON format with buttons as keys and callbacks as values. Example that sets the plus button callback follows.
+ *
+ * @tparam Object k
+ *
+ * @code
+ * keyboardCallback({'+':function(event,demoapplication){...}})
+ * @endcode
+ */
 DemoApplication.prototype.keyboardCallback = function(k){
   $.extend(this.keyboardCallbacksInternal,k);
 };
+
+/**
+ * Extends the keyboard callbacks. k is an object on the JSON format with buttons as keys and callbacks as values. Example that sets the plus button callback follows.
+ * @tparam object k
+ * @code
+ * keyboardCallback({'+':function(event,demoapplication){...}})
+ * @endcode
+ */
 DemoApplication.prototype.keyboardUpCallback = function(k){
   $.extend(this.keyboardUpCallbacksInternal,k);
 };
 
-DemoApplication.prototype.specialKeyboard = function(key, x, y){};
-DemoApplication.prototype.specialKeyboardUp = function(key, x, y){};
-
-// int w, int h
+/**
+ * On reshaping the screen to (w,h)
+ * @tparam int w
+ * @tparam int h
+ * @todo Implement me!
+ */
 DemoApplication.prototype.reshape = function(w, h){
   this.m_webglScreenWidth = w;
   this.m_webglScreenHeight = h;
@@ -833,8 +1035,11 @@ DemoApplication.prototype.reshape = function(w, h){
   this.updateCamera();
 };
 
-// int button, int state, int x, int y
-DemoApplication.prototype.mouseFunc = function(event){ // button, state, x, y  
+/**
+ * Triggers when clicking.
+ * @tparam Object event The javascript event object
+ */
+DemoApplication.prototype.mouseFunc = function(event){
   var button = this.mouseButton = event.which;
   var x = event.clientX///this.m_glScreenWidth;
   var y = event.clientY///this.m_glScreenHeight;
@@ -848,12 +1053,6 @@ DemoApplication.prototype.mouseFunc = function(event){ // button, state, x, y
 
   this.m_mouseOldX = x;
   this.m_mouseOldY = y;
-  
-  /*
-    this.updateModifierKeys();
-    if ((this.m_modifierKeys& BT_ACTIVE_ALT) && (state==0))
-    return;
-  */
 
   var rayTo = this.getRayTo(x, y);
 
@@ -978,6 +1177,10 @@ DemoApplication.prototype.mouseFunc = function(event){ // button, state, x, y
   }
 };
 
+/**
+ * Mouse motion function. Triggers when moving mouse.
+ * @tparam Object event
+ */
 DemoApplication.prototype.mouseMotionFunc = function(event){
   var x = event.clientX;
   var y = event.clientY;
@@ -1071,70 +1274,21 @@ DemoApplication.prototype.mouseMotionFunc = function(event){
   this.updateCamera();
 };
 
-// Needed?
+/**
+ * Called on render.
+ * @todo Needed?
+ */
 DemoApplication.prototype.displayCallback = function(){};
 
-// Override me!
-DemoApplication.prototype.renderme = function(){};
-
-DemoApplication.prototype.renderscene = function(pass){
-  /*
-  var m = new Float32Array(16);
-  var rot = new Ammo.btMatrix3x3(); rot.setIdentity();
-  var numObjects = this.m_dynamicsWorld.getNumCollisionObjects();
-  var wireColor = new Ammo.btVector3(1,0,0);
-  for(var i=0;i<numObjects;i++){
-    var colObj = this.m_dynamicsWorld.getCollisionObjectArray()[i];
-    var body = colObj;
-    if(body&&body.getMotionState()){
-      var myMotionState = body.getMotionState();
-      myMotionState.m_graphicsWorldTrans.getOpenGLMatrix(m);
-      rot=myMotionState.m_graphicsWorldTrans.getBasis();
-    } else {
-      colObj.getWorldTransform().getOpenGLMatrix(m);
-      rot=colObj.getWorldTransform().getBasis();
-    }
-    var wireColor = new Ammo.btVector3(1.0,1.0,0.5); //wants deactivation
-    if(i&1) wireColor=btVector3(0.0,0.0,1.0);
-    ///color differently for active, sleeping, wantsdeactivation states
-    if(colObj.getActivationState() == 1){ //active
-      if(i & 1){
-	wireColor += new Ammo.btVector3(1.0,0.0,0.);
-      } else {			
-	wireColor += new Ammo.btVector3(0.5, 0.0, 0.0);
-      }
-    }
-     //ISLAND_SLEEPING
-    if(colObj.getActivationState()==2){
-      if(i&1)
-	wireColor += btVector3 (0.0, 1.0, 0.0);
-      else
-	wireColor += btVector3 (0.0, 0.5,0.0);
-    }
-    
-    var aabbMin = new Ammo.btVector3(0,0,0),
-      aabbMax = new Ammo.btVector3(0,0,0);
-    m_dynamicsWorld.getBroadphase().getBroadphaseAabb(aabbMin,aabbMax);
-    
-    aabbMin-=btVector3(BT_LARGE_FLOAT,BT_LARGE_FLOAT,BT_LARGE_FLOAT);
-    aabbMax+=btVector3(BT_LARGE_FLOAT,BT_LARGE_FLOAT,BT_LARGE_FLOAT);
-    
-    if (!(getDebugMode()& this.DBG_DrawWireframe)){
-      switch(pass){
-      case	0:	m_shapeDrawer.drawOpenGL(m,colObj.getCollisionShape(),wireColor,getDebugMode(),aabbMin,aabbMax);break;
-      case	1:	m_shapeDrawer.drawShadow(m,m_sundirection*rot,colObj.getCollisionShape(),aabbMin,aabbMax);break;
-      case	2:	m_shapeDrawer.drawOpenGL(m,colObj.getCollisionShape(),wireColor*btScalar(0.3),0,aabbMin,aabbMax);break;
-      }
-    }
-    }
-  */
-};
-
-DemoApplication.prototype.swapBuffers = function(){};
-DemoApplication.prototype.updateModifierKeys = function(){};
-
+/**
+ * Step in degrees, used when rotating in eg azimuthal direction
+ * @treturn int
+ */
 DemoApplication.prototype.STEPSIZE = 5;
 
+/**
+ * Step (rotate) camera left
+ */
 DemoApplication.prototype.stepLeft = function(){
   this.m_azi -= this.STEPSIZE;
   if(this.m_azi < 0)
@@ -1142,6 +1296,9 @@ DemoApplication.prototype.stepLeft = function(){
   this.updateCamera(); 
 };
 
+/**
+ * Steps camera left, azimuth += step
+ */
 DemoApplication.prototype.stepRight = function(){
   this.m_azi += this.STEPSIZE;
   if(this.m_azi >= 360)
@@ -1149,6 +1306,9 @@ DemoApplication.prototype.stepRight = function(){
   this.updateCamera(); 
 };
 
+/**
+ * Steps camera forward, elevation += step
+ */
 DemoApplication.prototype.stepFront = function(){
   this.m_ele += this.STEPSIZE;
   if(this.m_ele >= 360)
@@ -1156,6 +1316,9 @@ DemoApplication.prototype.stepFront = function(){
   this.updateCamera();
 };
 
+/**
+ * "Steps backs" in camera position, eg elevation -= step
+ */
 DemoApplication.prototype.stepBack = function(){
   this.m_ele -= this.STEPSIZE;
   if(this.m_ele < 0)
@@ -1163,22 +1326,63 @@ DemoApplication.prototype.stepBack = function(){
   this.updateCamera();
 };
 
+/**
+ * Zooms in, eg camera distance -= step
+ */
 DemoApplication.prototype.zoomIn = function(){ 
   this.m_cameraDistance -= 0.4;
-  this.updateCamera(); 
   if(this.m_cameraDistance < 0.1)
     this.m_cameraDistance = 0.1;
+  this.updateCamera();
 };
 
+/**
+ * Zooms in, eg camera distance += step
+ */
 DemoApplication.prototype.zoomOut = function(){
   this.m_cameraDistance += 0.4;
   this.updateCamera();
 };
 
+/**
+ * Return camera idle state
+ * @treturn bool
+ */
 DemoApplication.prototype.isIdle = function(){
   return this.m_idle;
 };
 
+/**
+ * Set the idle state
+ * @tparam bool idle
+ */
 DemoApplication.prototype.setIdle = function(idle){
   this.m_idle = idle;
+};
+
+/**
+ * Internal keyboard callbacks are saved in this object.
+ * @see keyboardCallback()
+ * @private
+ */
+DemoApplication.prototype.keyboardCallbacksInternal = {
+  q:function(e,da){ },
+  l:function(e,da){ da.stepLeft(); },
+  r:function(e,da){ da.stepRight(); },
+  f:function(e,da){ da.stepFront(); },
+  b:function(e,da){ da.stepBack(); },
+  z:function(e,da){ da.zoomIn(); },
+  x:function(e,da){ da.zoomOut(); },
+  i:function(e,da){ da.toggleIdle(); },
+  g:function(e,da){ da.m_enableshadows=!da.m_enableshadows; da.m_shapeDrawer.enableShadows(da.m_enableshadows); },
+  u:function(e,da){ da.m_shapeDrawer.enableTexture(!da.m_shapeDrawer.enableTexture(false)); },
+  h:function(e,da){
+    if(da.m_debugMode & da.DBG_NoHelpText)
+      da.m_debugMode = da.m_debugMode & (~da.DBG_NoHelpText);
+    else
+      da.m_debugMode |= da.DBG_NoHelpText;
+  },
+  ' ':function(e,da){
+    da.clientResetScene();
+  }
 };

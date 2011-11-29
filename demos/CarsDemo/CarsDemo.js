@@ -100,7 +100,7 @@ MyDemoApplication.prototype.initPhysics = function(){
 	      mesh.scale.x = mesh.scale.y = mesh.scale.z = s;
 	      mesh.position.y=0.5;
 	      var o = new THREE.Object3D();
-	      mesh.castShadow=true;
+	      mesh.castShadow = true;
 	      mesh.receiveShadow = true;
 	      o.add(mesh);
 
