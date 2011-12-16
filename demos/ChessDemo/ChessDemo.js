@@ -233,8 +233,7 @@ MyDemoApplication.prototype.initPhysics = function(){
 		[1*s,0*s],
 		[6*s,0*s],
 
-		// Black
-		// Pawns
+		// Black Pawns
 		[0*s,6*s],
 		[1*s,6*s],
 		[2*s,6*s],
