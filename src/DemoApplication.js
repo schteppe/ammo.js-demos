@@ -219,7 +219,7 @@ function DemoApplication(options){
   // Start
   this.setShootBoxShape();
   this.updateCamera();
-  th.initPhysics();
+  this.initPhysics(this);
   this.updateCamera();
 }
 
@@ -236,9 +236,24 @@ DemoApplication.prototype.updateShapeDrawer = function(){
 /**
  * Get the btDynamicsWorld object from the demo app
  * @treturn btDynamicsWorld
+ * @deprecated Use DemoApplication.dynamicsWorld() instead
  */
 DemoApplication.prototype.getDynamicsWorld = function(){
   return this.m_dynamicsWorld;
+};
+
+/**
+ * Get/set the btDynamicsWorld object in the demo app
+ * @tparam btDynamicsWorld world
+ * @treturn btDynamicsWorld
+ */
+DemoApplication.prototype.dynamicsWorld = function(world){
+  if(world===undefined)
+    return this.m_dynamicsWorld;
+  else if(typeof(world)=="object")
+    this.m_dynamicsWorld = world;
+  else
+    throw "Argument must be Ammo.btDynamicsWorld object, "+typeof(world)+" given.";
 };
 
 /**
@@ -556,7 +571,7 @@ DemoApplication.prototype.setCameraDistance = function(dist){
 DemoApplication.prototype.moveAndDisplay = function(){
   var t0 = new Date().getTime();
   if (!this.m_idle){
-    this.clientMoveAndDisplay();
+    this.clientMoveAndDisplay(this);
   } else
     this.displayCallback();
   var t1 = new Date().getTime();
@@ -640,7 +655,6 @@ DemoApplication.prototype.setShootBoxShape = function(shapeType){
   case 'cone':     this.m_shootBoxShape = new Ammo.btConeShape(.5,1); break;
   default: this.setShootBoxShape('sphere'); break;
   }
-  console.log("shootboxshape set");
 };
 
 /**

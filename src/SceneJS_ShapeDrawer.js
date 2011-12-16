@@ -42,7 +42,7 @@ function SceneJS_ShapeDrawer(options){
 		  optics: {
 		    type: "perspective",
 		    fovy : 25.0,
-		    aspect : 16.0 / 9.0,
+		    aspect : document.width / document.height,
 		    near : 0.10,
 		    far : 300.0
 		  },

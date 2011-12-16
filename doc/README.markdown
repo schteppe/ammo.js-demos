@@ -1,10 +1,12 @@
 # Documentation
 
-This is a very simple documentation for the demo framework.
+This is a very simple documentation for the demo framework. You'll need doxygen and pearl to make the doc.
 
-You'll need doxygen and pearl to make the doc.
+<code>sudo apt-get install perl doxygen</code>
 
-To generate HTML and LaTeX doc, run the Makefile, eg <code>make</code>.
+To generate HTML and LaTeX doc, run the Makefile, eg
+
+<code>make</code>
 
 ## About js2doxy.pl
 
